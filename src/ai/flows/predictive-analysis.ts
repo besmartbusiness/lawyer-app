@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const PredictiveAnalysisInputSchema = z.object({
+const PredictiveAnalysisInputSchema = z.object({
   courtLocation: z.string().describe('Der Gerichtsort, an dem der Fall verhandelt wird (z.B. "OLG München", "AG Mannheim").'),
   legalArea: z.string().describe('Das betreffende Rechtsgebiet (z.B. "Mietrecht", "Arbeitsrecht", "Verkehrsrecht").'),
   coreArgument: z.string().describe('Die juristische Kernaussage des eigenen Antrags oder der Verteidigung (z.B. "Verjährungseinrede", "Arglistige Täuschung", "Fristlose Kündigung wegen Zahlungsverzug").'),
@@ -19,7 +19,7 @@ export const PredictiveAnalysisInputSchema = z.object({
 });
 export type PredictiveAnalysisInput = z.infer<typeof PredictiveAnalysisInputSchema>;
 
-export const PredictiveAnalysisOutputSchema = z.object({
+const PredictiveAnalysisOutputSchema = z.object({
   argumentStrength: z.array(z.object({
     argument: z.string().describe('Das analysierte juristische Argument.'),
     successRate: z.number().int().min(0).max(100).describe('Die historische Erfolgsquote dieses Arguments in ähnlichen Fällen vor dem genannten Gericht, in Prozent.'),
