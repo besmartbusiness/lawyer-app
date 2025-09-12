@@ -52,12 +52,14 @@ import {
   export default function ClientDetailPage({ params }: { params: { id: string } }) {
     const [documents, setDocuments] = useState<Document[]>(initialDocuments);
     const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+    const [activeTab, setActiveTab] = useState("documents");
+
 
     const handleSaveDocument = (doc: { title: string; content: string; notes: string; }) => {
         const existingDocIndex = selectedDocument ? documents.findIndex(d => d.id === selectedDocument.id) : -1;
 
-        if (existingDocIndex > -1) {
-            // Update existing document
+        if (existingDocIndex > -1 && activeTab === 'documents') {
+            // Update existing document only if we are in the doc generator
             setDocuments(docs => {
                 const updatedDocuments = [...docs];
                 const updatedDoc = {
@@ -71,7 +73,7 @@ import {
                 return updatedDocuments;
             });
         } else {
-             // Create new document
+             // Create new document (either from generator or summary)
             const newDocument: Document = {
                 id: `doc${documents.length + 1 + Math.random()}`,
                 title: doc.title,
@@ -80,7 +82,12 @@ import {
                 notes: doc.notes,
             };
             setDocuments(prevDocs => [...prevDocs, newDocument]);
-            setSelectedDocument(newDocument);
+            setSelectedDocument(newDocument); // Select the newly created/saved doc
+            
+            // If the summary was saved, switch to the documents tab to show it
+            if (activeTab === 'summary') {
+                setActiveTab('documents');
+            }
         }
     };
     
@@ -90,6 +97,7 @@ import {
 
     const handleSelectDocument = (doc: Document) => {
         setSelectedDocument(doc);
+        setActiveTab('documents');
     }
     
     const caseDetailsForGenerator = `
@@ -112,7 +120,7 @@ ${client.caseSummary}
                 <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
             </div>
         </div>
-        <Tabs defaultValue="documents" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
             <TabsTrigger value="summary">KI-Zusammenfassung</TabsTrigger>
@@ -129,7 +137,7 @@ ${client.caseSummary}
               <CardHeader>
                 <CardTitle>Generierte Dokumente</CardTitle>
                 <CardDescription>
-                  Für diesen Fall generierte Dokumente.
+                  Für diesen Fall generierte Dokumente. Klicken Sie auf ein Dokument, um es zu bearbeiten.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -160,7 +168,7 @@ ${client.caseSummary}
             </Card>
           </TabsContent>
           <TabsContent value="summary">
-            <SummaryGenerator />
+            <SummaryGenerator onSave={handleSaveDocument} />
           </TabsContent>
           <TabsContent value="details">
             <Card>

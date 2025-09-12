@@ -6,15 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, BookText, Wand2, UploadCloud } from 'lucide-react';
+import { Loader2, BookText, Wand2, UploadCloud, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { summarizeText } from '@/ai/flows/summarize-text';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
 
-export function SummaryGenerator() {
+type SummaryGeneratorProps = {
+    onSave: (doc: { title: string; content: string; notes: string }) => void;
+};
+
+
+export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
   const [textToSummarize, setTextToSummarize] = useState('');
   const [summary, setSummary] = useState('');
+  const [summaryTitle, setSummaryTitle] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [fileName, setFileName] = useState('');
   const [pdfDataUri, setPdfDataUri] = useState('');
   const { toast } = useToast();
@@ -65,6 +72,7 @@ export function SummaryGenerator() {
 
     setIsSummarizing(true);
     setSummary('');
+    setSummaryTitle('');
 
     try {
       const result = await summarizeText({ 
@@ -72,6 +80,7 @@ export function SummaryGenerator() {
         documentDataUri: pdfDataUri || undefined,
        });
       setSummary(result.summary);
+      setSummaryTitle(`Zusammenfassung für ${fileName || 'eingefügten Text'}`);
     } catch (error) {
       console.error('Summarization error:', error);
       toast({
@@ -96,6 +105,51 @@ export function SummaryGenerator() {
     }
   };
 
+  const handleSaveSummary = async () => {
+    if (!summaryTitle.trim()) {
+        toast({
+            variant: 'destructive',
+            title: 'Titel erforderlich',
+            description: 'Bitte geben Sie einen Titel für die Zusammenfassung ein.',
+        });
+        return;
+    }
+    if (!summary.trim()) {
+        toast({
+            variant: 'destructive',
+            title: 'Keine Zusammenfassung',
+            description: 'Es gibt keine Zusammenfassung zum Speichern.',
+        });
+        return;
+    }
+    
+    setIsSaving(true);
+    // Use the original text/file name as "notes"
+    const notes = textToSummarize || `Zusammenfassung der Datei: ${fileName}`;
+    onSave({ title: summaryTitle, content: summary, notes: notes });
+
+    await new Promise(resolve => setTimeout(resolve, 500)); 
+    
+    toast({
+        title: 'Zusammenfassung gespeichert',
+        description: `Das Dokument "${summaryTitle}" wurde erstellt. Sie finden es im Tab "KI-Dokumente".`,
+    });
+    
+    // Clear the form
+    setTextToSummarize('');
+    setSummary('');
+    setSummaryTitle('');
+    setFileName('');
+    setPdfDataUri('');
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+
+    setIsSaving(false);
+  }
+
+  const isBusy = isSummarizing || isSaving;
+
   return (
     <Card>
       <CardHeader>
@@ -118,7 +172,7 @@ export function SummaryGenerator() {
                     value={textToSummarize}
                     onChange={handleTextChange}
                     className="min-h-[300px] h-full"
-                    disabled={isSummarizing}
+                    disabled={isBusy}
                 />
                 <input
                     type="file"
@@ -132,7 +186,7 @@ export function SummaryGenerator() {
                     variant="outline"
                     className='absolute bottom-3 right-3'
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isSummarizing}
+                    disabled={isBusy}
                 >
                     <UploadCloud className="mr-2" /> PDF hochladen
                 </Button>
@@ -145,25 +199,34 @@ export function SummaryGenerator() {
           </div>
           <div className="space-y-2 flex flex-col">
             <Label htmlFor="summary">KI-Zusammenfassung</Label>
-            <div className="relative flex-1">
-              <Textarea
-                id="summary"
-                placeholder="Die Zusammenfassung der KI wird hier angezeigt..."
-                value={summary}
-                readOnly
-                className="min-h-[300px] h-full bg-secondary/50"
-              />
-              {isSummarizing && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-md">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-                  <p className="text-sm text-muted-foreground">Dokument wird analysiert...</p>
+             <div className="relative flex-1">
+                {isSummarizing && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-md z-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                    <p className="text-sm text-muted-foreground">Dokument wird analysiert...</p>
+                    </div>
+                )}
+                <div className="space-y-2 flex flex-col h-full">
+                    <Input 
+                        id="summary-title"
+                        placeholder="Titel der Zusammenfassung..."
+                        value={summaryTitle}
+                        onChange={(e) => setSummaryTitle(e.target.value)}
+                        disabled={isBusy || !summary}
+                        />
+                    <Textarea
+                        id="summary"
+                        placeholder="Die Zusammenfassung der KI wird hier angezeigt..."
+                        value={summary}
+                        readOnly
+                        className="flex-grow h-full bg-secondary/50"
+                    />
                 </div>
-              )}
             </div>
           </div>
         </div>
-        <div className="flex justify-end">
-          <Button onClick={handleSummarize} disabled={isSummarizing || (!textToSummarize.trim() && !pdfDataUri)}>
+        <div className="flex justify-end gap-2">
+          <Button onClick={handleSummarize} disabled={isBusy || (!textToSummarize.trim() && !pdfDataUri)}>
             {isSummarizing ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -171,6 +234,14 @@ export function SummaryGenerator() {
             )}
             Zusammenfassung erstellen
           </Button>
+            <Button onClick={handleSaveSummary} disabled={isBusy || !summary || !summaryTitle} variant="outline">
+                {isSaving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                <Save className="mr-2 h-4 w-4" />
+                )}
+                Zusammenfassung speichern
+            </Button>
         </div>
       </CardContent>
     </Card>
