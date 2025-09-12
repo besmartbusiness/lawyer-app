@@ -33,7 +33,7 @@ import {
   // Mock data for a single client
   const client = {
     id: "1",
-    name: "John Doe (Vertretung für Mandant)",
+    name: "Max Mustermann vs. Gegenpartei GmbH",
     caseInfo: {
         plaintiff: "Max Mustermann\nMusterstraße 1\n12345 Musterstadt",
         defendant: "Gegenpartei GmbH\nFirmenweg 2\n54321 Firmenstadt",
@@ -58,8 +58,8 @@ import {
     const handleSaveDocument = (doc: { title: string; content: string; notes: string; }) => {
         const existingDocIndex = selectedDocument ? documents.findIndex(d => d.id === selectedDocument.id) : -1;
 
-        if (existingDocIndex > -1 && activeTab === 'documents') {
-            // Update existing document only if we are in the doc generator
+        if (existingDocIndex > -1) {
+            // Update existing document
             setDocuments(docs => {
                 const updatedDocuments = [...docs];
                 const updatedDoc = {
@@ -69,11 +69,12 @@ import {
                     notes: doc.notes,
                 };
                 updatedDocuments[existingDocIndex] = updatedDoc;
+                // Keep the updated doc selected
                 setSelectedDocument(updatedDoc);
                 return updatedDocuments;
             });
         } else {
-             // Create new document (either from generator or summary)
+             // Create new document
             const newDocument: Document = {
                 id: `doc${documents.length + 1 + Math.random()}`,
                 title: doc.title,
@@ -81,8 +82,8 @@ import {
                 content: doc.content,
                 notes: doc.notes,
             };
-            setDocuments(prevDocs => [...prevDocs, newDocument]);
-            setSelectedDocument(newDocument); // Select the newly created/saved doc
+            setDocuments(prevDocs => [newDocument, ...prevDocs]);
+            setSelectedDocument(newDocument);
             
             // If the summary was saved, switch to the documents tab to show it
             if (activeTab === 'summary') {
@@ -100,23 +101,14 @@ import {
         setActiveTab('documents');
     }
     
-    const caseDetailsForGenerator = `
-# Fall-Stammdaten:
-Kläger: ${client.caseInfo.plaintiff}
-Beklagter: ${client.caseInfo.defendant}
-Gericht: ${client.caseInfo.court}
-Aktenzeichen: ${client.caseInfo.caseNumber}
-
-# Zusammenfassung des Falls:
-${client.caseSummary}
-`;
+    const clientNameForTimeTracking = client.name;
 
 
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight font-headline">Fall: {client.caseInfo.plaintiff.split('\n')[0]} vs. {client.caseInfo.defendant.split('\n')[0]}</h2>
+                <h2 className="text-3xl font-bold tracking-tight font-headline">Fall: {client.name}</h2>
                 <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
             </div>
         </div>
@@ -128,7 +120,7 @@ ${client.caseSummary}
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
             <DocumentGenerator 
-              clientNotes={caseDetailsForGenerator} 
+              clientName={clientNameForTimeTracking}
               onSave={handleSaveDocument}
               onNew={handleNewDocument}
               selectedDocument={selectedDocument}
@@ -208,3 +200,5 @@ ${client.caseSummary}
       </div>
     );
   }
+
+    
