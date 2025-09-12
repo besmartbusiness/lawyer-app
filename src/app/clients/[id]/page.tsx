@@ -19,6 +19,7 @@ import {
   } from '@/components/ui/table';
   import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
   import { DocumentGenerator } from './document-generator';
+  import { SummaryGenerator } from './summary-generator';
 
   // Define the type for a document
   type Document = {
@@ -114,6 +115,7 @@ ${client.caseSummary}
         <Tabs defaultValue="documents" className="space-y-4">
           <TabsList>
             <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
+            <TabsTrigger value="summary">KI-Zusammenfassung</TabsTrigger>
             <TabsTrigger value="details">Stammdaten & Details</TabsTrigger>
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
@@ -157,6 +159,9 @@ ${client.caseSummary}
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="summary">
+            <SummaryGenerator />
+          </TabsContent>
           <TabsContent value="details">
             <Card>
               <CardHeader>
@@ -195,5 +200,3 @@ ${client.caseSummary}
       </div>
     );
   }
-
-    

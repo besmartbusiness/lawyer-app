@@ -6,3 +6,4 @@ import '@/ai/flows/generate-legal-document-from-notes.ts';
 import '@/ai/flows/transcribe-audio.ts';
 import '@/ai/flows/get-text-blocks.ts';
 import '@/ai/flows/get-document-templates.ts';
+import '@/ai/flows/summarize-text.ts';
