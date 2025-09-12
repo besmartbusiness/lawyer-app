@@ -14,11 +14,13 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarInset,
+  SidebarTrigger,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
 import { Icons } from '@/components/icons';
-import { LayoutDashboard, Users, Settings, LogOut, FileText, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, FileText, ShieldCheck, BrainCircuit, Lightbulb, Bot } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 
@@ -36,18 +38,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   if (loading || !user) {
     return (
       <div className="flex h-screen">
-        <div className="hidden md:flex flex-col w-64 border-r p-4 gap-4">
+        <div className="hidden md:flex flex-col w-64 border-r bg-sidebar p-4 gap-4">
             <div className="flex items-center gap-2">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-8 w-8 rounded-full bg-sidebar-accent" />
+                <Skeleton className="h-6 w-24 bg-sidebar-accent" />
             </div>
             <div className="flex flex-col gap-2 mt-4">
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full bg-sidebar-accent" />
+                <Skeleton className="h-8 w-full bg-sidebar-accent" />
+                <Skeleton className="h-8 w-full bg-sidebar-accent" />
             </div>
             <div className="mt-auto">
-                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full bg-sidebar-accent" />
             </div>
         </div>
         <div className="flex-1 p-8">
@@ -71,13 +73,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader className="p-4">
-            <Link href="/" className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-10 w-10 text-primary">
-                    <Icons.Logo className="h-8 w-8" />
+        <SidebarHeader className="p-4 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5">
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-primary">
+                    <Icons.Logo className="h-7 w-7" />
                 </Button>
-                <h1 className="text-xl font-bold font-headline text-primary-foreground group-data-[collapsible=icon]:hidden">Lexa.i.</h1>
+                <h1 className="text-xl font-bold font-headline text-sidebar-primary-foreground group-data-[collapsible=icon]:hidden">Lexa.i.</h1>
             </Link>
+            <SidebarTrigger className="md:hidden"/>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -97,19 +100,33 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+             <SidebarSeparator />
+             <SidebarMenuItem>
+                <div className="px-2 py-1 text-xs font-medium text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+                    KI-Werkzeuge
+                </div>
+             </SidebarMenuItem>
              <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={pathname.startsWith('/contract-analysis')}>
                 <Link href="/contract-analysis">
-                  <ShieldCheck />
-                  <span>Vertragsanalyse</span>
+                  <Bot />
+                  <span>Verhandlungs-Copilot</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild >
+                <Link href="/clients/1">
+                  <Lightbulb />
+                  <span>KI-Stratege</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/settings')}>
-                 <Link href="/settings">
-                  <Settings />
-                  <span>Einstellungen</span>
+              <SidebarMenuButton asChild>
+                 <Link href="/clients/1">
+                  <BrainCircuit />
+                  <span>KI-Prognose</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -117,6 +134,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarFooter>
             <SidebarMenu>
+                 <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname.startsWith('/settings')}>
+                    <Link href="/settings">
+                      <Settings />
+                      <span>Einstellungen</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={handleLogout}>
                         <LogOut />
@@ -127,7 +152,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex items-center justify-end h-16 px-4 border-b">
+        <header className="flex items-center justify-between h-16 px-4 md:px-6 border-b">
+            <div className="flex items-center gap-2">
+                <SidebarTrigger className="hidden md:flex"/>
+                {/* We can add breadcrumbs or page title here later */}
+            </div>
             <UserNav />
         </header>
         <main className="flex-1 overflow-y-auto">{children}</main>
