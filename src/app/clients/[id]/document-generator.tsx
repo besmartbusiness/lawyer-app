@@ -13,6 +13,7 @@ import { generateLegalDocument } from '@/ai/flows/generate-legal-document-from-n
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/lib/hooks/use-auth';
 
 type Document = {
   id: string;
@@ -40,6 +41,7 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
   const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (selectedDocument) {
@@ -64,10 +66,14 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
       });
       return;
     }
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Nicht angemeldet', description: 'Sie müssen angemeldet sein.' });
+        return;
+    }
     setIsGenerating(true);
     setGeneratedDoc('');
     try {
-      const result = await generateLegalDocument({ notes });
+      const result = await generateLegalDocument({ notes, userId: user.uid });
       setGeneratedDoc(result.document);
       if (!documentTitle) {
         setDocumentTitle("Unbenanntes Dokument");
@@ -133,6 +139,10 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
 
   const startRecording = async () => {
     setTranscriptionError(null);
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Nicht angemeldet', description: 'Sie müssen angemeldet sein.' });
+        return;
+    }
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -170,7 +180,7 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
             setGeneratedDoc('');
 
             try {
-                const result = await generateLegalDocument({ notes: transcribedNotes });
+                const result = await generateLegalDocument({ notes: transcribedNotes, userId: user.uid });
                 setGeneratedDoc(result.document);
                 if (!documentTitle) {
                   setDocumentTitle("Entwurf nach Diktat");
@@ -226,7 +236,7 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
                 KI-Dokumentengenerator
                 </CardTitle>
                 <CardDescription>
-                Erstellen oder diktieren Sie Entwürfe für juristische Dokumente.
+                Erstellen oder diktieren Sie Entwürfe für juristische Dokumente. Nutzen Sie /einfügen [Kürzel] für Ihre Textbausteine.
                 </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={handleNewDocument} disabled={isBusy}>
@@ -239,7 +249,7 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
         <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="notes">Fallnotizen / Aktenvermerk</Label>
+                <Label htmlFor="notes">Fallnotizen / Aktenvermerk / Diktat</Label>
                 <Button variant="ghost" size="icon" onClick={handleToggleRecording} title={isRecording ? "Aufnahme stoppen" : "Diktat starten"} disabled={isBusy}>
                   {isRecording ? <MicOff className="text-destructive" /> : <Mic />}
                 </Button>

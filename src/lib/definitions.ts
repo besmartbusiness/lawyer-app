@@ -19,3 +19,11 @@ export type LegalDocument = {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
+
+export type TextBlock = {
+  id: string;
+  userId: string;
+  name: string;
+  content: string;
+  createdAt: Timestamp;
+};
