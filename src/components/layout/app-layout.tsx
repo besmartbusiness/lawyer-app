@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
 import { Icons } from '@/components/icons';
-import { LayoutDashboard, Users, Settings, LogOut, FileText } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, FileText, ShieldCheck } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 
@@ -94,6 +94,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href="/clients">
                   <Users />
                   <span>Mandanten</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/contract-analysis')}>
+                <Link href="/contract-analysis">
+                  <ShieldCheck />
+                  <span>Vertragsanalyse</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
