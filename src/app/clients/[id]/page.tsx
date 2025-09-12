@@ -21,6 +21,8 @@ import {
   import { DocumentGenerator } from './document-generator';
   import { SummaryGenerator } from './summary-generator';
   import { CaseStrategyView } from './strategy-view';
+  import { PredictiveAnalysisView } from './predictive-analysis-view';
+
 
   // Define the type for a document
   type Document = {
@@ -64,7 +66,7 @@ import {
             setDocuments(docs => {
                 const updatedDocuments = [...docs];
                 const updatedDoc = {
-                    ...updatedDocuments[existingDocIndex],
+                    ...updatedDocuments[existingDoc-index],
                     title: doc.title,
                     content: doc.content,
                     notes: doc.notes,
@@ -87,7 +89,7 @@ import {
             setSelectedDocument(newDocument);
             
             // If the summary was saved, switch to the documents tab to show it
-            if (activeTab === 'summary' || activeTab === 'strategy') {
+            if (activeTab === 'summary' || activeTab === 'strategy' || activeTab === 'prediction') {
                 setActiveTab('documents');
             }
         }
@@ -118,6 +120,7 @@ import {
             <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
             <TabsTrigger value="summary">KI-Akten-Scanner</TabsTrigger>
             <TabsTrigger value="strategy">KI-Strategie</TabsTrigger>
+            <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
             <TabsTrigger value="details">Stammdaten & Details</TabsTrigger>
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
@@ -166,6 +169,9 @@ import {
           </TabsContent>
           <TabsContent value="strategy">
             <CaseStrategyView caseSummary={client.caseSummary} />
+          </TabsContent>
+          <TabsContent value="prediction">
+            <PredictiveAnalysisView caseInfo={client.caseInfo} caseSummary={client.caseSummary} />
           </TabsContent>
           <TabsContent value="details">
             <Card>

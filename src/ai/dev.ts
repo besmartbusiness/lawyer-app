@@ -10,3 +10,4 @@ import '@/ai/flows/summarize-text.ts';
 import '@/ai/flows/suggest-citations.ts';
 import '@/ai/flows/summarize-for-client.ts';
 import '@/ai/flows/generate-case-strategy.ts';
+import '@/ai/flows/predictive-analysis.ts';
