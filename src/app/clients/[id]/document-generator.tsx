@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Icons } from '@/components/icons';
-import { Loader2, Wand2, Save, Mic, MicOff, AlertCircle, FilePlus2, FileText, BookOpenCheck } from 'lucide-react';
+import { Loader2, Wand2, Save, Mic, MicOff, AlertCircle, FilePlus2, FileText, BookOpenCheck, Languages, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateLegalDocument } from '@/ai/flows/generate-legal-document-from-notes';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
@@ -16,6 +16,9 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Citation, suggestCitations } from '@/ai/flows/suggest-citations';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { summarizeForClient } from '@/ai/flows/summarize-for-client';
+
 
 type Document = {
   id: string;
@@ -46,6 +49,11 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  const [isSummarizingForClient, setIsSummarizingForClient] = useState(false);
+  const [clientSummary, setClientSummary] = useState('');
+  const [showClientSummaryDialog, setShowClientSummaryDialog] = useState(false);
+
 
   useEffect(() => {
     if (selectedDocument) {
@@ -232,10 +240,36 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
         description: 'Sie können jetzt ein neues Dokument erstellen.'
     })
   };
+  
+  const handleSummarizeForClient = async () => {
+    if (!generatedDoc.trim()) {
+        toast({ variant: 'destructive', title: 'Kein Dokument', description: 'Es gibt kein Dokument zum Übersetzen.' });
+        return;
+    }
+    setIsSummarizingForClient(true);
+    setClientSummary('');
+    setShowClientSummaryDialog(true);
+    try {
+        const result = await summarizeForClient({ documentContent: generatedDoc });
+        setClientSummary(result.summary);
+    } catch(error) {
+        console.error('Client summary error:', error);
+        toast({ variant: 'destructive', title: 'Übersetzung fehlgeschlagen', description: 'Die Zusammenfassung konnte nicht erstellt werden.' });
+        setShowClientSummaryDialog(false);
+    } finally {
+        setIsSummarizingForClient(false);
+    }
+  }
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(clientSummary);
+    toast({ title: 'Kopiert', description: 'Die Zusammenfassung wurde in die Zwischenablage kopiert.' });
+  }
 
   const isBusy = isGenerating || isRecording || isTranscribing || isSaving || isSuggesting;
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex justify-between items-start">
@@ -317,6 +351,15 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
                     </div>
                 )}
               </div>
+              <Button 
+                variant="link" 
+                onClick={handleSummarizeForClient} 
+                disabled={isBusy || !generatedDoc}
+                className="self-end mt-2"
+                >
+                    <Languages className="mr-2 h-4 w-4" />
+                    Für Mandanten übersetzen
+                </Button>
             </div>
         </div>
 
@@ -373,5 +416,35 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
             </div>
       </CardContent>
     </Card>
+
+    <Dialog open={showClientSummaryDialog} onOpenChange={setShowClientSummaryDialog}>
+        <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+            <DialogTitle>Mandantenfreundliche Zusammenfassung</DialogTitle>
+            <DialogDescription>
+                Eine vereinfachte Version des Dokuments zur Weitergabe an Ihren Mandanten.
+            </DialogDescription>
+            </DialogHeader>
+            <div className="relative mt-4 min-h-[300px] max-h-[60vh] overflow-y-auto rounded-md border bg-secondary/30 p-4">
+                {isSummarizingForClient ? (
+                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-md transition-opacity duration-300">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                        <p className="text-sm text-muted-foreground">Dokument wird übersetzt...</p>
+                    </div>
+                ) : (
+                    <p className="text-sm text-secondary-foreground whitespace-pre-wrap">
+                        {clientSummary}
+                    </p>
+                )}
+            </div>
+             <div className="flex justify-end mt-4">
+                <Button variant="outline" onClick={copyToClipboard} disabled={isSummarizingForClient || !clientSummary}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Text kopieren
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }
