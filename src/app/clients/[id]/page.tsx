@@ -50,16 +50,38 @@ import {
     const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
     const handleSaveDocument = (doc: { title: string; content: string; notes: string; }) => {
-        const newDocument: Document = {
-            id: `doc${documents.length + 1}`,
-            title: doc.title,
-            createdAt: new Date().toISOString().split('T')[0],
-            content: doc.content,
-            notes: doc.notes,
-        };
-        setDocuments(prevDocs => [...prevDocs, newDocument]);
-        // Switch to the newly created document
-        setSelectedDocument(newDocument);
+        // This is a special case to handle "new document" which clears the selection
+        if (!doc.title && !doc.content && !doc.notes) {
+            setSelectedDocument(null);
+            return;
+        }
+
+        const existingDocIndex = selectedDocument ? documents.findIndex(d => d.id === selectedDocument.id) : -1;
+
+        if (existingDocIndex > -1) {
+            // Update existing document
+            const updatedDocuments = [...documents];
+            const updatedDoc = {
+                ...updatedDocuments[existingDocIndex],
+                title: doc.title,
+                content: doc.content,
+                notes: doc.notes,
+            };
+            updatedDocuments[existingDocIndex] = updatedDoc;
+            setDocuments(updatedDocuments);
+            setSelectedDocument(updatedDoc);
+        } else {
+             // Create new document
+            const newDocument: Document = {
+                id: `doc${documents.length + 1 + Math.random()}`,
+                title: doc.title,
+                createdAt: new Date().toISOString().split('T')[0],
+                content: doc.content,
+                notes: doc.notes,
+            };
+            setDocuments(prevDocs => [...prevDocs, newDocument]);
+            setSelectedDocument(newDocument);
+        }
     };
 
     const handleSelectDocument = (doc: Document) => {
@@ -102,7 +124,12 @@ import {
                   </TableHeader>
                   <TableBody>
                     {documents.map((doc) => (
-                      <TableRow key={doc.id} onClick={() => handleSelectDocument(doc)} className="cursor-pointer">
+                      <TableRow 
+                        key={doc.id} 
+                        onClick={() => handleSelectDocument(doc)} 
+                        className="cursor-pointer"
+                        data-state={selectedDocument?.id === doc.id ? 'selected' : ''}
+                      >
                         <TableCell className="font-medium hover:underline">
                           {doc.title}
                         </TableCell>
@@ -121,7 +148,7 @@ import {
                 <CardDescription>
                   Kontakt- und Falldetails für {client.name}.
                 </CardDescription>
-              </CardHeader>
+              </Header>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
