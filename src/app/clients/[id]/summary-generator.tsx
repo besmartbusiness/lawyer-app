@@ -158,7 +158,7 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
           KI-Akten-Scanner
         </CardTitle>
         <CardDescription>
-          Fügen Sie den Inhalt eines Dokuments ein oder laden Sie ein PDF hoch, um eine KI-gestützte Zusammenfassung zu erhalten.
+          Fügen Sie den Inhalt eines Dokuments ein oder laden Sie ein PDF hoch, um eine KI-gestützte Zusammenfassung der Kernaussagen, Argumente und Beweismittel zu erhalten.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
