@@ -50,12 +50,6 @@ import {
     const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
     const handleSaveDocument = (doc: { title: string; content: string; notes: string; }) => {
-        // This is a special case to handle "new document" which clears the selection
-        if (!doc.title && !doc.content && !doc.notes) {
-            setSelectedDocument(null);
-            return;
-        }
-
         const existingDocIndex = selectedDocument ? documents.findIndex(d => d.id === selectedDocument.id) : -1;
 
         if (existingDocIndex > -1) {
@@ -85,6 +79,10 @@ import {
             setSelectedDocument(newDocument);
         }
     };
+    
+    const handleNewDocument = () => {
+        setSelectedDocument(null);
+    }
 
     const handleSelectDocument = (doc: Document) => {
         setSelectedDocument(doc);
@@ -107,6 +105,7 @@ import {
             <DocumentGenerator 
               clientNotes={client.caseDetails || ''} 
               onSave={handleSaveDocument}
+              onNew={handleNewDocument}
               selectedDocument={selectedDocument}
             />
             <Card>
@@ -177,5 +176,3 @@ import {
       </div>
     );
   }
-
-    

@@ -25,10 +25,11 @@ type Document = {
 type DocumentGeneratorProps = {
   clientNotes: string;
   onSave: (doc: { title: string; content: string; notes: string }) => void;
+  onNew: () => void;
   selectedDocument: Document | null;
 };
 
-export function DocumentGenerator({ clientNotes, onSave, selectedDocument }: DocumentGeneratorProps) {
+export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument }: DocumentGeneratorProps) {
   const [notes, setNotes] = useState(clientNotes);
   const [documentTitle, setDocumentTitle] = useState('');
   const [generatedDoc, setGeneratedDoc] = useState('');
@@ -203,7 +204,7 @@ export function DocumentGenerator({ clientNotes, onSave, selectedDocument }: Doc
   };
   
   const handleNewDocument = () => {
-    onSave({ title: '', content: '', notes: '' }); // This will trigger the parent to clear the selected doc
+    onNew(); // This will trigger the parent to clear the selected doc
     setNotes(clientNotes);
     setGeneratedDoc('');
     setDocumentTitle('');
@@ -321,5 +322,3 @@ export function DocumentGenerator({ clientNotes, onSave, selectedDocument }: Doc
     </Card>
   );
 }
-
-    
