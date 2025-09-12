@@ -14,7 +14,7 @@ export default function SettingsLayout({
 
     const tabs = [
         { name: 'Allgemein', href: '/settings', path: '/settings' },
-        { name: 'Textbausteine', href: '/settings/templates', path: '/settings/templates' },
+        { name: 'Vorlagen & Textbausteine', href: '/settings/templates', path: '/settings/templates' },
     ];
     
     // Determine the active tab by finding the most specific match

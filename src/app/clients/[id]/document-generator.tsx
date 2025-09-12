@@ -111,6 +111,7 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
     setIsSaving(true);
     onSave({ title: documentTitle, content: generatedDoc, notes: notes });
     
+    // Simple feedback simulation
     await new Promise(resolve => setTimeout(resolve, 500)); 
     
     toast({
@@ -172,7 +173,9 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
             const transcriptionResult = await transcribeAudio({ audioDataUri });
             const transcribedNotes = transcriptionResult.text;
             
-            setNotes(prev => prev ? `${prev}\n\n${transcribedNotes}` : transcribedNotes);
+            // Append transcribed notes to existing notes
+            const newNotes = notes ? `${notes}\n\n--- Diktat ---\n${transcribedNotes}` : transcribedNotes;
+            setNotes(newNotes);
             toast({ title: 'Transkription erfolgreich', description: 'Notizen aktualisiert. Starte Dokumentengenerierung...' });
 
             setIsTranscribing(false);
@@ -180,7 +183,8 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
             setGeneratedDoc('');
 
             try {
-                const result = await generateLegalDocument({ notes: transcribedNotes, userId: user.uid });
+                // Use all current notes (including the new transcription) for generation
+                const result = await generateLegalDocument({ notes: newNotes, userId: user.uid });
                 setGeneratedDoc(result.document);
                 if (!documentTitle) {
                   setDocumentTitle("Entwurf nach Diktat");
@@ -236,7 +240,7 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
                 KI-Dokumentengenerator
                 </CardTitle>
                 <CardDescription>
-                Erstellen oder diktieren Sie Entwürfe für juristische Dokumente. Nutzen Sie /einfügen [Kürzel] für Ihre Textbausteine.
+                Nutzen Sie /vorlage [Name] für Dokumentvorlagen und /einfügen [Kürzel] für Textbausteine.
                 </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={handleNewDocument} disabled={isBusy}>
