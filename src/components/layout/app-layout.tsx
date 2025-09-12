@@ -93,7 +93,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuButton asChild isActive={pathname.startsWith('/clients')}>
                 <Link href="/clients">
                   <Users />
-                  <span>Clients</span>
+                  <span>Mandanten</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -101,7 +101,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuButton asChild isActive={pathname === '/settings'}>
                  <Link href="/settings">
                   <Settings />
-                  <span>Settings</span>
+                  <span>Einstellungen</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -112,7 +112,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={handleLogout}>
                         <LogOut />
-                        <span>Logout</span>
+                        <span>Ausloggen</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>

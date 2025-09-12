@@ -23,12 +23,12 @@ import {
     email: "john.doe@example.com",
     phone: "123-456-7890",
     address: "123 Main St, Anytown, USA",
-    caseDetails: "Initial consultation regarding a contractual dispute with a supplier. The client claims non-delivery of goods despite full payment. Contract signed on Jan 15, 2024."
+    caseDetails: "Erstes Beratungsgespräch bezüglich eines Vertragsstreits mit einem Lieferanten. Der Mandant behauptet die Nichtlieferung von Waren trotz vollständiger Bezahlung. Vertrag unterzeichnet am 15. Januar 2024."
   };
   
   const documents = [
-    { id: "doc1", title: "Initial Demand Letter", createdAt: "2024-05-21" },
-    { id: "doc2", title: "Client Agreement", createdAt: "2024-05-20" },
+    { id: "doc1", title: "Erstes Aufforderungsschreiben", createdAt: "2024-05-21" },
+    { id: "doc2", title: "Mandantenvereinbarung", createdAt: "2024-05-20" },
   ];
   
   export default function ClientDetailPage({ params }: { params: { id: string } }) {
@@ -42,24 +42,24 @@ import {
         </div>
         <Tabs defaultValue="documents" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="documents">AI Documents</TabsTrigger>
-            <TabsTrigger value="details">Client Details</TabsTrigger>
+            <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
+            <TabsTrigger value="details">Mandantendetails</TabsTrigger>
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
             <DocumentGenerator clientNotes={client.caseDetails || ''} />
             <Card>
               <CardHeader>
-                <CardTitle>Generated Documents</CardTitle>
+                <CardTitle>Generierte Dokumente</CardTitle>
                 <CardDescription>
-                  Documents generated for {client.name}.
+                  Für {client.name} generierte Dokumente.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Date Created</TableHead>
+                      <TableHead>Titel</TableHead>
+                      <TableHead>Erstellungsdatum</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -79,9 +79,9 @@ import {
           <TabsContent value="details">
             <Card>
               <CardHeader>
-                <CardTitle>Client Information</CardTitle>
+                <CardTitle>Mandanteninformationen</CardTitle>
                 <CardDescription>
-                  Contact and case details for {client.name}.
+                  Kontakt- und Falldetails für {client.name}.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -91,16 +91,16 @@ import {
                         <p>{client.email}</p>
                     </div>
                      <div>
-                        <p className="font-medium text-muted-foreground">Phone</p>
+                        <p className="font-medium text-muted-foreground">Telefon</p>
                         <p>{client.phone}</p>
                     </div>
                      <div>
-                        <p className="font-medium text-muted-foreground">Address</p>
+                        <p className="font-medium text-muted-foreground">Adresse</p>
                         <p>{client.address}</p>
                     </div>
                 </div>
                  <div>
-                    <p className="font-medium text-muted-foreground">Case Details</p>
+                    <p className="font-medium text-muted-foreground">Falldetails</p>
                     <p className="whitespace-pre-wrap">{client.caseDetails}</p>
                 </div>
               </CardContent>

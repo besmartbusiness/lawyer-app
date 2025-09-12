@@ -19,7 +19,7 @@ export default function DashboardPage() {
         <div className="flex items-center space-x-2">
           <Button asChild>
             <Link href="/clients">
-              <PlusCircle className="mr-2 h-4 w-4" /> New Client
+              <PlusCircle className="mr-2 h-4 w-4" /> Neuer Mandant
             </Link>
           </Button>
         </div>
@@ -28,35 +28,35 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Clients
+              Mandanten insgesamt
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>
             <p className="text-xs text-muted-foreground">
-              +2 this month
+              +2 diesen Monat
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Documents Generated
+              Dokumente generiert
             </CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">45</div>
             <p className="text-xs text-muted-foreground">
-              +10 this month
+              +10 diesen Monat
             </p>
           </CardContent>
         </Card>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Recent Clients</CardTitle>
+          <CardTitle>Letzte Mandanten</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -64,7 +64,7 @@ export default function DashboardPage() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Date Added</TableHead>
+                <TableHead>Hinzugefügt am</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -20,8 +20,8 @@ import { Loader2 } from 'lucide-react';
 
 
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  email: z.string().email({ message: 'Ungültige E-Mail-Adresse.' }),
+  password: z.string().min(6, { message: 'Das Passwort muss mindestens 6 Zeichen lang sein.' }),
 });
 
 export default function LoginPage() {
@@ -46,8 +46,8 @@ export default function LoginPage() {
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Login Failed',
-        description: error.message || 'An unknown error occurred.',
+        title: 'Anmeldung fehlgeschlagen',
+        description: error.message || 'Ein unbekannter Fehler ist aufgetreten.',
       });
     } finally {
         setIsLoading(false);
@@ -60,8 +60,8 @@ export default function LoginPage() {
         <div className="mx-auto mb-4">
              <Icons.Logo className="h-12 w-12 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
-        <CardDescription>Enter your credentials to access your account</CardDescription>
+        <CardTitle className="text-2xl font-headline">Willkommen zurück</CardTitle>
+        <CardDescription>Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -85,9 +85,9 @@ export default function LoginPage() {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Passwort</FormLabel>
                     <Link href="#" className="text-sm font-medium text-primary hover:underline">
-                      Forgot password?
+                      Passwort vergessen?
                     </Link>
                   </div>
                   <FormControl>
@@ -99,16 +99,16 @@ export default function LoginPage() {
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
+              Anmelden
             </Button>
           </form>
         </Form>
         <Separator className="my-6" />
         <GoogleAuthButton />
         <div className="mt-4 text-center text-sm">
-          Don&apos;t have an account?{' '}
+          Sie haben noch kein Konto?{' '}
           <Link href="/signup" className="underline font-medium text-primary">
-            Sign up
+            Registrieren
           </Link>
         </div>
       </CardContent>

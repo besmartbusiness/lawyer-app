@@ -20,9 +20,9 @@ import { Loader2 } from 'lucide-react';
 
 
 const signupSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  name: z.string().min(2, { message: 'Der Name muss mindestens 2 Zeichen lang sein.' }),
+  email: z.string().email({ message: 'Ungültige E-Mail-Adresse.' }),
+  password: z.string().min(6, { message: 'Das Passwort muss mindestens 6 Zeichen lang sein.' }),
 });
 
 export default function SignupPage() {
@@ -51,8 +51,8 @@ export default function SignupPage() {
         } catch (error: any) {
             toast({
                 variant: 'destructive',
-                title: 'Sign Up Failed',
-                description: error.message || 'An unknown error occurred.',
+                title: 'Registrierung fehlgeschlagen',
+                description: error.message || 'Ein unbekannter Fehler ist aufgetreten.',
             });
         } finally {
             setIsLoading(false);
@@ -66,8 +66,8 @@ export default function SignupPage() {
         <div className="mx-auto mb-4">
              <Icons.Logo className="h-12 w-12 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
-        <CardDescription>Start generating legal documents with AI</CardDescription>
+        <CardTitle className="text-2xl font-headline">Konto erstellen</CardTitle>
+        <CardDescription>Generieren Sie juristische Dokumente mit KI</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -79,7 +79,7 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="Max Mustermann" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,7 +103,7 @@ export default function SignupPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Passwort</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
@@ -113,16 +113,16 @@ export default function SignupPage() {
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Account
+              Konto erstellen
             </Button>
           </form>
         </Form>
         <Separator className="my-6" />
         <GoogleAuthButton />
         <div className="mt-4 text-center text-sm">
-          Already have an account?{' '}
+          Sie haben bereits ein Konto?{' '}
           <Link href="/login" className="underline font-medium text-primary">
-            Sign in
+            Anmelden
           </Link>
         </div>
       </CardContent>

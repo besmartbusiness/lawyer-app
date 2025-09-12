@@ -54,13 +54,13 @@ export function UserNav() {
         <DropdownMenuGroup>
           <DropdownMenuItem onSelect={() => router.push('/settings')}>
             <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+            <span>Einstellungen</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>Ausloggen</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

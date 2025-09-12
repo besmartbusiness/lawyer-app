@@ -14,12 +14,12 @@ import {z} from 'genkit';
 const SummarizeClientNotesInputSchema = z.object({
   notes: z
     .string()
-    .describe('The client notes to be summarized.'),
+    .describe('Die zu zusammenfassenden Mandantennotizen.'),
 });
 export type SummarizeClientNotesInput = z.infer<typeof SummarizeClientNotesInputSchema>;
 
 const SummarizeClientNotesOutputSchema = z.object({
-  summary: z.string().describe('A concise summary of the client notes.'),
+  summary: z.string().describe('Eine prägnante Zusammenfassung der Mandantennotizen.'),
 });
 export type SummarizeClientNotesOutput = z.infer<typeof SummarizeClientNotesOutputSchema>;
 
@@ -31,7 +31,7 @@ const prompt = ai.definePrompt({
   name: 'summarizeClientNotesPrompt',
   input: {schema: SummarizeClientNotesInputSchema},
   output: {schema: SummarizeClientNotesOutputSchema},
-  prompt: `You are an expert legal assistant. Please summarize the following client notes into a concise and easy-to-understand summary:\n\nNotes: {{{notes}}}`,
+  prompt: `Sie sind ein erfahrener juristischer Assistent in einer deutschen Anwaltskanzlei. Fassen Sie die folgenden Mandantennotizen prägnant, strukturiert und verständlich auf Deutsch zusammen:\n\nNotizen: {{{notes}}}`,
 });
 
 const summarizeClientNotesFlow = ai.defineFlow(

@@ -11,12 +11,12 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateLegalDocumentInputSchema = z.object({
-  notes: z.string().describe('The case notes, either from voice recording or text input.'),
+  notes: z.string().describe('Die Fallnotizen, entweder aus einer Sprachaufnahme oder einer Texteingabe.'),
 });
 export type GenerateLegalDocumentInput = z.infer<typeof GenerateLegalDocumentInputSchema>;
 
 const GenerateLegalDocumentOutputSchema = z.object({
-  document: z.string().describe('The generated legal document with professional text and paragraph citations.'),
+  document: z.string().describe('Das generierte juristische Dokument mit professionellem Text und Absatz-Zitaten.'),
 });
 export type GenerateLegalDocumentOutput = z.infer<typeof GenerateLegalDocumentOutputSchema>;
 
@@ -28,7 +28,7 @@ const generateLegalDocumentPrompt = ai.definePrompt({
   name: 'generateLegalDocumentPrompt',
   input: {schema: GenerateLegalDocumentInputSchema},
   output: {schema: GenerateLegalDocumentOutputSchema},
-  prompt: `You are an AI legal assistant. Generate a formal legal document based on the following case notes, including professional text and relevant paragraph citations.\n\nCase Notes: {{{notes}}}`,
+  prompt: `Sie sind ein KI-Rechtsassistent für eine deutsche Anwaltskanzlei. Erstellen Sie auf Basis der folgenden Fallnotizen ein formelles juristisches Dokument in deutscher Sprache. Achten Sie auf eine professionelle Ausdrucksweise, korrekte juristische Terminologie und fügen Sie, wo sinnvoll, Absatz- oder Paragraph-Zitate hinzu.\n\nFallnotizen: {{{notes}}}`,
 });
 
 const generateLegalDocumentFlow = ai.defineFlow(
