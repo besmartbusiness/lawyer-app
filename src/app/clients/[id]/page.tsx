@@ -32,17 +32,20 @@ import {
   // Mock data for a single client
   const client = {
     id: "1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "123-456-7890",
-    address: "123 Main St, Anytown, USA",
-    caseDetails: "Erstes Beratungsgespräch bezüglich eines Vertragsstreits mit einem Lieferanten. Der Mandant behauptet die Nichtlieferung von Waren trotz vollständiger Bezahlung. Vertrag unterzeichnet am 15. Januar 2024."
+    name: "John Doe (Vertretung für Mandant)",
+    caseInfo: {
+        plaintiff: "Max Mustermann\nMusterstraße 1\n12345 Musterstadt",
+        defendant: "Gegenpartei GmbH\nFirmenweg 2\n54321 Firmenstadt",
+        court: "Amtsgericht Musterstadt",
+        caseNumber: "123 C 456/24"
+    },
+    caseSummary: "Erstes Beratungsgespräch bezüglich eines Vertragsstreits mit einem Lieferanten. Der Mandant behauptet die Nichtlieferung von Waren trotz vollständiger Bezahlung. Vertrag unterzeichnet am 15. Januar 2024."
   };
   
   // Initial mock documents
   const initialDocuments: Document[] = [
-    { id: "doc1", title: "Erstes Aufforderungsschreiben", createdAt: "2024-05-21", content: "Inhalt des ersten Aufforderungsschreibens...", notes: client.caseDetails },
-    { id: "doc2", title: "Mandantenvereinbarung", createdAt: "2024-05-20", content: "Inhalt der Mandantenvereinbarung...", notes: client.caseDetails },
+    { id: "doc1", title: "Erstes Aufforderungsschreiben", createdAt: "2024-05-21", content: "Inhalt des ersten Aufforderungsschreibens...", notes: client.caseSummary },
+    { id: "doc2", title: "Mandantenvereinbarung", createdAt: "2024-05-20", content: "Inhalt der Mandantenvereinbarung...", notes: client.caseSummary },
   ];
   
   export default function ClientDetailPage({ params }: { params: { id: string } }) {
@@ -87,23 +90,35 @@ import {
     const handleSelectDocument = (doc: Document) => {
         setSelectedDocument(doc);
     }
+    
+    const caseDetailsForGenerator = `
+# Fall-Stammdaten:
+Kläger: ${client.caseInfo.plaintiff}
+Beklagter: ${client.caseInfo.defendant}
+Gericht: ${client.caseInfo.court}
+Aktenzeichen: ${client.caseInfo.caseNumber}
+
+# Zusammenfassung des Falls:
+${client.caseSummary}
+`;
+
 
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight font-headline">{client.name}</h2>
-                <p className="text-muted-foreground">{client.email}</p>
+                <h2 className="text-3xl font-bold tracking-tight font-headline">Fall: {client.caseInfo.plaintiff.split('\n')[0]} vs. {client.caseInfo.defendant.split('\n')[0]}</h2>
+                <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
             </div>
         </div>
         <Tabs defaultValue="documents" className="space-y-4">
           <TabsList>
             <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
-            <TabsTrigger value="details">Mandantendetails</TabsTrigger>
+            <TabsTrigger value="details">Stammdaten & Details</TabsTrigger>
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
             <DocumentGenerator 
-              clientNotes={client.caseDetails || ''} 
+              clientNotes={caseDetailsForGenerator} 
               onSave={handleSaveDocument}
               onNew={handleNewDocument}
               selectedDocument={selectedDocument}
@@ -112,7 +127,7 @@ import {
               <CardHeader>
                 <CardTitle>Generierte Dokumente</CardTitle>
                 <CardDescription>
-                  Für {client.name} generierte Dokumente.
+                  Für diesen Fall generierte Dokumente.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -145,29 +160,33 @@ import {
           <TabsContent value="details">
             <Card>
               <CardHeader>
-                <CardTitle>Mandanteninformationen</CardTitle>
+                <CardTitle>Stammdaten des Falls</CardTitle>
                 <CardDescription>
-                  Kontakt- und Falldetails für {client.name}.
+                  Parteien, Gericht und weitere Details zum Fall.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                     <div>
-                        <p className="font-medium text-muted-foreground">Email</p>
-                        <p>{client.email}</p>
+                        <p className="font-semibold text-base mb-2">Kläger</p>
+                        <p className="whitespace-pre-wrap">{client.caseInfo.plaintiff}</p>
                     </div>
                      <div>
-                        <p className="font-medium text-muted-foreground">Telefon</p>
-                        <p>{client.phone}</p>
+                        <p className="font-semibold text-base mb-2">Beklagter</p>
+                        <p className="whitespace-pre-wrap">{client.caseInfo.defendant}</p>
                     </div>
                      <div>
-                        <p className="font-medium text-muted-foreground">Adresse</p>
-                        <p>{client.address}</p>
+                        <p className="font-semibold text-base mb-2">Gericht</p>
+                        <p className="whitespace-pre-wrap">{client.caseInfo.court}</p>
+                    </div>
+                     <div>
+                        <p className="font-semibold text-base mb-2">Aktenzeichen</p>
+                        <p className="whitespace-pre-wrap">{client.caseInfo.caseNumber}</p>
                     </div>
                 </div>
-                 <div>
-                    <p className="font-medium text-muted-foreground">Falldetails</p>
-                    <p className="whitespace-pre-wrap">{client.caseDetails}</p>
+                 <div className="pt-4 border-t">
+                    <p className="font-semibold text-base mb-2">Zusammenfassung des Falls</p>
+                    <p className="whitespace-pre-wrap text-sm">{client.caseSummary}</p>
                 </div>
               </CardContent>
             </Card>
@@ -176,3 +195,5 @@ import {
       </div>
     );
   }
+
+    
