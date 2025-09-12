@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState } from 'react';
 import {
     Card,
     CardContent,
@@ -15,8 +19,17 @@ import {
   } from '@/components/ui/table';
   import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
   import { DocumentGenerator } from './document-generator';
+
+  // Define the type for a document
+  type Document = {
+    id: string;
+    title: string;
+    createdAt: string;
+    content: string;
+    notes: string;
+  };
   
-  // Mock data for a single client and their documents
+  // Mock data for a single client
   const client = {
     id: "1",
     name: "John Doe",
@@ -26,12 +39,33 @@ import {
     caseDetails: "Erstes Beratungsgespräch bezüglich eines Vertragsstreits mit einem Lieferanten. Der Mandant behauptet die Nichtlieferung von Waren trotz vollständiger Bezahlung. Vertrag unterzeichnet am 15. Januar 2024."
   };
   
-  const documents = [
-    { id: "doc1", title: "Erstes Aufforderungsschreiben", createdAt: "2024-05-21" },
-    { id: "doc2", title: "Mandantenvereinbarung", createdAt: "2024-05-20" },
+  // Initial mock documents
+  const initialDocuments: Document[] = [
+    { id: "doc1", title: "Erstes Aufforderungsschreiben", createdAt: "2024-05-21", content: "Inhalt des ersten Aufforderungsschreibens...", notes: client.caseDetails },
+    { id: "doc2", title: "Mandantenvereinbarung", createdAt: "2024-05-20", content: "Inhalt der Mandantenvereinbarung...", notes: client.caseDetails },
   ];
   
   export default function ClientDetailPage({ params }: { params: { id: string } }) {
+    const [documents, setDocuments] = useState<Document[]>(initialDocuments);
+    const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+
+    const handleSaveDocument = (doc: { title: string; content: string; notes: string; }) => {
+        const newDocument: Document = {
+            id: `doc${documents.length + 1}`,
+            title: doc.title,
+            createdAt: new Date().toISOString().split('T')[0],
+            content: doc.content,
+            notes: doc.notes,
+        };
+        setDocuments(prevDocs => [...prevDocs, newDocument]);
+        // Switch to the newly created document
+        setSelectedDocument(newDocument);
+    };
+
+    const handleSelectDocument = (doc: Document) => {
+        setSelectedDocument(doc);
+    }
+
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
@@ -46,7 +80,11 @@ import {
             <TabsTrigger value="details">Mandantendetails</TabsTrigger>
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
-            <DocumentGenerator clientNotes={client.caseDetails || ''} />
+            <DocumentGenerator 
+              clientNotes={client.caseDetails || ''} 
+              onSave={handleSaveDocument}
+              selectedDocument={selectedDocument}
+            />
             <Card>
               <CardHeader>
                 <CardTitle>Generierte Dokumente</CardTitle>
@@ -64,8 +102,8 @@ import {
                   </TableHeader>
                   <TableBody>
                     {documents.map((doc) => (
-                      <TableRow key={doc.id}>
-                        <TableCell className="font-medium hover:underline cursor-pointer">
+                      <TableRow key={doc.id} onClick={() => handleSelectDocument(doc)} className="cursor-pointer">
+                        <TableCell className="font-medium hover:underline">
                           {doc.title}
                         </TableCell>
                         <TableCell>{doc.createdAt}</TableCell>
