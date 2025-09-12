@@ -7,13 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Icons } from '@/components/icons';
-import { Loader2, Wand2, Save, Mic, MicOff, AlertCircle, FilePlus2, FileText } from 'lucide-react';
+import { Loader2, Wand2, Save, Mic, MicOff, AlertCircle, FilePlus2, FileText, BookOpenCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateLegalDocument } from '@/ai/flows/generate-legal-document-from-notes';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/hooks/use-auth';
+import { Citation, suggestCitations } from '@/ai/flows/suggest-citations';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 type Document = {
   id: string;
@@ -34,7 +36,9 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
   const [notes, setNotes] = useState(clientNotes);
   const [documentTitle, setDocumentTitle] = useState('');
   const [generatedDoc, setGeneratedDoc] = useState('');
+  const [citations, setCitations] = useState<Citation[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -48,11 +52,13 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
       setNotes(selectedDocument.notes);
       setGeneratedDoc(selectedDocument.content);
       setDocumentTitle(selectedDocument.title);
+      setCitations([]); // Clear citations when loading a doc
     } else {
         // Clear fields when there is no selected document or when creating a new one
         setNotes(clientNotes);
         setGeneratedDoc('');
         setDocumentTitle('');
+        setCitations([]);
     }
   }, [selectedDocument, clientNotes]);
 
@@ -71,13 +77,30 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
         return;
     }
     setIsGenerating(true);
+    setIsSuggesting(true);
     setGeneratedDoc('');
+    setCitations([]);
+
     try {
-      const result = await generateLegalDocument({ notes, userId: user.uid });
-      setGeneratedDoc(result.document);
-      if (!documentTitle) {
-        setDocumentTitle("Unbenanntes Dokument");
-      }
+        // Fire off both requests in parallel
+        const docPromise = generateLegalDocument({ notes, userId: user.uid });
+        const citationPromise = suggestCitations({ context: notes });
+
+        citationPromise.then(result => {
+            setCitations(result.suggestions);
+        }).catch(error => {
+            console.error("Citation suggestion failed:", error);
+            // Non-critical, so we don't show a toast
+        }).finally(() => {
+            setIsSuggesting(false);
+        });
+
+        const docResult = await docPromise;
+        setGeneratedDoc(docResult.document);
+        if (!documentTitle) {
+            setDocumentTitle("Unbenanntes Dokument");
+        }
+
     } catch (error) {
       console.error(error);
       toast({
@@ -111,7 +134,6 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
     setIsSaving(true);
     onSave({ title: documentTitle, content: generatedDoc, notes: notes });
     
-    // Simple feedback simulation
     await new Promise(resolve => setTimeout(resolve, 500)); 
     
     toast({
@@ -173,32 +195,14 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
             const transcriptionResult = await transcribeAudio({ audioDataUri });
             const transcribedNotes = transcriptionResult.text;
             
-            // Append transcribed notes to existing notes
             const newNotes = notes ? `${notes}\n\n--- Diktat ---\n${transcribedNotes}` : transcribedNotes;
             setNotes(newNotes);
             toast({ title: 'Transkription erfolgreich', description: 'Notizen aktualisiert. Starte Dokumentengenerierung...' });
 
             setIsTranscribing(false);
-            setIsGenerating(true);
-            setGeneratedDoc('');
-
-            try {
-                // Use all current notes (including the new transcription) for generation
-                const result = await generateLegalDocument({ notes: newNotes, userId: user.uid });
-                setGeneratedDoc(result.document);
-                if (!documentTitle) {
-                  setDocumentTitle("Entwurf nach Diktat");
-                }
-              } catch (error) {
-                console.error(error);
-                toast({
-                  variant: 'destructive',
-                  title: 'Generierung fehlgeschlagen',
-                  description: 'Beim Generieren des Dokuments nach Diktat ist ein Fehler aufgetreten.',
-                });
-              } finally {
-                setIsGenerating(false);
-              }
+            
+            // Now call the main generate handler
+            handleGenerate();
 
           } catch (error) {
             console.error('Transcription error:', error);
@@ -218,17 +222,18 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
   };
   
   const handleNewDocument = () => {
-    onNew(); // This will trigger the parent to clear the selected doc
+    onNew(); 
     setNotes(clientNotes);
     setGeneratedDoc('');
     setDocumentTitle('');
+    setCitations([]);
     toast({
         title: 'Neues Dokument',
         description: 'Sie können jetzt ein neues Dokument erstellen.'
     })
   };
 
-  const isBusy = isGenerating || isRecording || isTranscribing || isSaving;
+  const isBusy = isGenerating || isRecording || isTranscribing || isSaving || isSuggesting;
 
   return (
     <Card>
@@ -314,9 +319,43 @@ export function DocumentGenerator({ clientNotes, onSave, onNew, selectedDocument
               </div>
             </div>
         </div>
+
+        {(isSuggesting || citations.length > 0) && (
+            <div className="space-y-4">
+                 <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <BookOpenCheck className="h-5 w-5 text-primary" />
+                    KI-Vorschläge für Zitate & Paragrafen
+                 </h3>
+                 {isSuggesting ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Suche nach relevanten Paragrafen und Urteilen...</span>
+                    </div>
+                 ) : (
+                    <Accordion type="multiple" className="w-full">
+                        {citations.map((citation, index) => (
+                            <AccordionItem value={`item-${index}`} key={index}>
+                                <AccordionTrigger>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-xs font-semibold py-1 px-2 rounded-full ${citation.type === 'paragraph' ? 'bg-primary/10 text-primary' : 'bg-accent/20 text-accent-foreground'}`}>
+                                            {citation.type === 'paragraph' ? '§' : 'Urteil'}
+                                        </span>
+                                        <span>{citation.citation}</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{citation.explanation}</p>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                 )}
+            </div>
+        )}
+
          <div className="flex items-center justify-end gap-2">
             <Button onClick={handleGenerate} disabled={isBusy}>
-                {isGenerating ? (
+                {isGenerating || isSuggesting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                 <Wand2 className="mr-2 h-4 w-4" />
