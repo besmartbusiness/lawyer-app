@@ -60,16 +60,18 @@ import {
 
         if (existingDocIndex > -1) {
             // Update existing document
-            const updatedDocuments = [...documents];
-            const updatedDoc = {
-                ...updatedDocuments[existingDocIndex],
-                title: doc.title,
-                content: doc.content,
-                notes: doc.notes,
-            };
-            updatedDocuments[existingDocIndex] = updatedDoc;
-            setDocuments(updatedDocuments);
-            setSelectedDocument(updatedDoc);
+            setDocuments(docs => {
+                const updatedDocuments = [...docs];
+                const updatedDoc = {
+                    ...updatedDocuments[existingDocIndex],
+                    title: doc.title,
+                    content: doc.content,
+                    notes: doc.notes,
+                };
+                updatedDocuments[existingDocIndex] = updatedDoc;
+                setSelectedDocument(updatedDoc);
+                return updatedDocuments;
+            });
         } else {
              // Create new document
             const newDocument: Document = {
@@ -148,7 +150,7 @@ import {
                 <CardDescription>
                   Kontakt- und Falldetails für {client.name}.
                 </CardDescription>
-              </Header>
+              </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
@@ -175,3 +177,5 @@ import {
       </div>
     );
   }
+
+    

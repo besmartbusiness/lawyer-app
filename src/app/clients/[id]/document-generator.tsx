@@ -321,3 +321,5 @@ export function DocumentGenerator({ clientNotes, onSave, selectedDocument }: Doc
     </Card>
   );
 }
+
+    
