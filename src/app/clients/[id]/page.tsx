@@ -66,7 +66,7 @@ import {
             setDocuments(docs => {
                 const updatedDocuments = [...docs];
                 const updatedDoc = {
-                    ...updatedDocuments[existingDoc-index],
+                    ...updatedDocuments[existingDocIndex],
                     title: doc.title,
                     content: doc.content,
                     notes: doc.notes,
@@ -104,7 +104,7 @@ import {
         setActiveTab('documents');
     }
     
-    const clientNameForTimeTracking = client.name;
+    const clientNameForGenerator = client.name;
 
 
     return (
@@ -125,7 +125,7 @@ import {
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
             <DocumentGenerator 
-              clientName={clientNameForTimeTracking}
+              clientName={clientNameForGenerator}
               onSave={handleSaveDocument}
               onNew={handleNewDocument}
               selectedDocument={selectedDocument}
@@ -211,3 +211,5 @@ import {
       </div>
     );
   }
+
+    

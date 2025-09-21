@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Icons } from '@/components/icons';
-import { Loader2, Wand2, Save, Mic, MicOff, AlertCircle, FilePlus2, FileText, BookOpenCheck, Languages, Copy, Clock, Timer } from 'lucide-react';
+import { Loader2, Wand2, Save, Mic, MicOff, AlertCircle, FilePlus2, FileText, BookOpenCheck, Languages, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateLegalDocument } from '@/ai/flows/generate-legal-document-from-notes';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Citation, suggestCitations } from '@/ai/flows/suggest-citations';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { summarizeForClient } from '@/ai/flows/summarize-for-client';
 
 
@@ -54,38 +54,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
   const [clientSummary, setClientSummary] = useState('');
   const [showClientSummaryDialog, setShowClientSummaryDialog] = useState(false);
 
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [timeTrackingEntry, setTimeTrackingEntry] = useState('');
-  const [showTimeTrackingDialog, setShowTimeTrackingDialog] = useState(false);
-
-
-  const startTimer = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-        setElapsedTime(prevTime => prevTime + 1);
-    }, 1000);
-  }, []);
-
-  const stopTimer = useCallback(() => {
-    if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-    }
-  }, []);
-
-  const resetTimer = useCallback(() => {
-    stopTimer();
-    setElapsedTime(0);
-  }, [stopTimer]);
-
-  useEffect(() => {
-    // Cleanup timer on component unmount
-    return () => {
-      stopTimer();
-    };
-  }, [stopTimer]);
-
 
   useEffect(() => {
     if (selectedDocument) {
@@ -100,9 +68,7 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
         setDocumentTitle('');
         setCitations([]);
     }
-    resetTimer();
-    startTimer();
-  }, [selectedDocument, resetTimer, startTimer]);
+  }, [selectedDocument]);
 
 
   const handleGenerate = async () => {
@@ -175,13 +141,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
 
     setIsSaving(true);
     onSave({ title: documentTitle, content: generatedDoc, notes: notes });
-    
-    // Stop timer and generate time tracking entry
-    stopTimer();
-    const minutes = Math.max(1, Math.ceil(elapsedTime / 60)); // Min 1 minute
-    const timeEntry = `Entwurf "${documentTitle}" i.S. ${clientName}, ${minutes} Minuten`;
-    setTimeTrackingEntry(timeEntry);
-    setShowTimeTrackingDialog(true);
     
     await new Promise(resolve => setTimeout(resolve, 500)); 
     
@@ -276,8 +235,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
     setGeneratedDoc('');
     setDocumentTitle('');
     setCitations([]);
-    resetTimer();
-    startTimer();
     toast({
         title: 'Neues Dokument',
         description: 'Sie können jetzt ein neues Dokument erstellen.'
@@ -309,12 +266,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
     toast({ title: 'Kopiert', description: successMessage });
   }
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const secs = (seconds % 60).toString().padStart(2, '0');
-    return `${mins}:${secs}`;
-  };
-
   const isBusy = isGenerating || isRecording || isTranscribing || isSaving || isSuggesting;
 
   return (
@@ -332,10 +283,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
                 </CardDescription>
             </div>
             <div className="flex items-center gap-4">
-                 <div className="flex items-center gap-2 text-sm text-muted-foreground" title="Aktive Bearbeitungszeit für dieses Dokument">
-                    <Timer className="h-4 w-4" />
-                    <span>{formatTime(elapsedTime)}</span>
-                </div>
                 <Button variant="outline" size="sm" onClick={handleNewDocument} disabled={isBusy}>
                     <FilePlus2 className="mr-2 h-4 w-4" />
                     Neues Dokument
@@ -498,32 +445,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
                     Text kopieren
                 </Button>
             </div>
-        </DialogContent>
-    </Dialog>
-
-    <Dialog open={showTimeTrackingDialog} onOpenChange={setShowTimeTrackingDialog}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
-                    Vorschlag für Zeiterfassung
-                </DialogTitle>
-                <DialogDescription>
-                    Kopieren Sie diesen Eintrag für Ihr Zeiterfassungssystem.
-                </DialogDescription>
-            </DialogHeader>
-            <div className="mt-4 rounded-md border bg-secondary/50 p-4 text-sm font-mono">
-                {timeTrackingEntry}
-            </div>
-            <DialogFooter className="mt-4">
-                <Button variant="outline" onClick={() => copyToClipboard(timeTrackingEntry, 'Der Zeiterfassungseintrag wurde kopiert.')}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Eintrag kopieren
-                </Button>
-                 <Button onClick={() => setShowTimeTrackingDialog(false)}>
-                    Schließen
-                </Button>
-            </DialogFooter>
         </DialogContent>
     </Dialog>
     </>
