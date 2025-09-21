@@ -5,6 +5,7 @@ import { AuthProvider } from '@/lib/hooks/use-auth';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthLayoutWrapper } from '@/components/layout/auth-layout-wrapper';
 import { ThemeProvider } from '@/components/theme-provider';
+import { CookieBanner } from '@/components/cookie-banner';
 
 export const metadata: Metadata = {
   title: 'Lexa.i.',
@@ -31,6 +32,7 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <AuthLayoutWrapper>{children}</AuthLayoutWrapper>
+            <CookieBanner />
             <Toaster />
           </ThemeProvider>
         </AuthProvider>
