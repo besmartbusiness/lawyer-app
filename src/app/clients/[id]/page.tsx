@@ -110,7 +110,7 @@ import {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="h-auto grid grid-cols-1 md:inline-flex md:flex-wrap md:justify-start">
                 <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
-                <TabsTrigger value="generator">KI-Dokumentengenerator</TabsTrigger>
+                <TabsTrigger value="generator">KI-Generator</TabsTrigger>
                 <TabsTrigger value="scanner">KI-Akten-Scanner</TabsTrigger>
                 <TabsTrigger value="strategy">KI-Stratege</TabsTrigger>
                 <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
