@@ -108,15 +108,13 @@ import {
             <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <div className="overflow-x-auto pb-2">
-                <TabsList>
-                    <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
-                    <TabsTrigger value="generator">KI-Dokumentengenerator</TabsTrigger>
-                    <TabsTrigger value="scanner">KI-Akten-Scanner</TabsTrigger>
-                    <TabsTrigger value="strategy">KI-Stratege</TabsTrigger>
-                    <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
-                </TabsList>
-            </div>
+            <TabsList className="h-auto flex-wrap justify-start">
+                <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
+                <TabsTrigger value="generator">KI-Dokumentengenerator</TabsTrigger>
+                <TabsTrigger value="scanner">KI-Akten-Scanner</TabsTrigger>
+                <TabsTrigger value="strategy">KI-Stratege</TabsTrigger>
+                <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
+            </TabsList>
           <TabsContent value="documents" className="space-y-4">
             <Card>
                 <CardHeader>
@@ -194,3 +192,5 @@ import {
       </div>
     );
   }
+
+    
