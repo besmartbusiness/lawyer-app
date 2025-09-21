@@ -20,8 +20,8 @@ import {
   import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
   import { DocumentGenerator } from './document-generator';
   import { SummaryGenerator } from './summary-generator';
-  import { StrategyView } from '../case-strategy/strategy-view';
-  import { AnalysisView } from '../predictive-analysis/analysis-view';
+  import { StrategyView } from '@/app/case-strategy/strategy-view';
+  import { AnalysisView } from '@/app/predictive-analysis/analysis-view';
 
 
   // Define the type for a document
