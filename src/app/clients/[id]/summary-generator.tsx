@@ -162,7 +162,7 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="text-to-summarize">Zu analysierendes Dokument</Label>
             <div className='relative'>
@@ -247,3 +247,5 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
     </Card>
   );
 }
+
+    

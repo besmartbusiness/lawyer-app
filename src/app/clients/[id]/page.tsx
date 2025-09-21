@@ -69,152 +69,130 @@ import {
                 const updatedDocuments = [...docs];
                 const updatedDoc = {
                     ...updatedDocuments[existingDocIndex],
-                    title: doc.title,
-                    content: doc.content,
-                    notes: doc.notes,
+                    ...doc,
                 };
                 updatedDocuments[existingDocIndex] = updatedDoc;
-                // Keep the updated doc selected
-                setSelectedDocument(updatedDoc);
+                setSelectedDocument(updatedDoc); // Ensure the selected document is the updated one
                 return updatedDocuments;
             });
         } else {
-             // Create new document
-            const newDocument: Document = {
-                id: `doc${documents.length + 1 + Math.random()}`,
-                title: doc.title,
+            // Add new document
+            const newDoc = {
+                id: `doc${Date.now()}`,
                 createdAt: new Date().toISOString().split('T')[0],
-                content: doc.content,
-                notes: doc.notes,
+                ...doc,
             };
-            setDocuments(prevDocs => [newDocument, ...prevDocs]);
-            setSelectedDocument(newDocument);
-            
-            // If the summary was saved, switch to the documents tab to show it
-            if (activeTab === 'summary' || activeTab === 'strategy' || activeTab === 'prediction') {
-                setActiveTab('documents');
-            }
+            const newDocuments = [newDoc, ...documents];
+            setDocuments(newDocuments);
+            setSelectedDocument(newDoc); // Select the newly created document
         }
+        setActiveTab("documents");
     };
-    
+
     const handleNewDocument = () => {
         setSelectedDocument(null);
+        setActiveTab('generator');
     }
 
-    const handleSelectDocument = (doc: Document) => {
+    const handleRowClick = (doc: Document) => {
         setSelectedDocument(doc);
-        setActiveTab('documents');
-    }
-    
-    const clientNameForGenerator = client.name;
-
-
+        setActiveTab("generator");
+    };
+  
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
-            <div>
-                <h2 className="text-3xl font-bold tracking-tight font-headline">Fall: {client.name}</h2>
-                <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
-            </div>
+        <div className="space-y-1">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight font-headline break-words">
+                Fall: {client.name}
+            </h2>
+            <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
-            <TabsTrigger value="summary">KI-Akten-Scanner</TabsTrigger>
-            <TabsTrigger value="strategy">KI-Stratege</TabsTrigger>
-            <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
-            <TabsTrigger value="details">Stammdaten & Details</TabsTrigger>
-          </TabsList>
+            <div className="overflow-x-auto">
+                <TabsList>
+                    <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
+                    <TabsTrigger value="generator">KI-Dokumentengenerator</TabsTrigger>
+                    <TabsTrigger value="scanner">KI-Akten-Scanner</TabsTrigger>
+                    <TabsTrigger value="strategy">KI-Stratege</TabsTrigger>
+                    <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
+                </TabsList>
+            </div>
           <TabsContent value="documents" className="space-y-4">
-            <DocumentGenerator 
-              clientName={clientNameForGenerator}
-              onSave={handleSaveDocument}
-              onNew={handleNewDocument}
-              selectedDocument={selectedDocument}
-            />
             <Card>
-              <CardHeader>
-                <CardTitle>Generierte Dokumente</CardTitle>
-                <CardDescription>
-                  Für diesen Fall generierte Dokumente. Klicken Sie auf ein Dokument, um es zu bearbeiten.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Titel</TableHead>
-                      <TableHead>Erstellungsdatum</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {documents.map((doc) => (
-                      <TableRow 
-                        key={doc.id} 
-                        onClick={() => handleSelectDocument(doc)} 
-                        className="cursor-pointer"
-                        data-state={selectedDocument?.id === doc.id ? 'selected' : ''}
-                      >
-                        <TableCell className="font-medium hover:underline">
-                          {doc.title}
-                        </TableCell>
-                        <TableCell>{doc.createdAt}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
+                <CardHeader>
+                    <CardTitle>Dokumentenübersicht</CardTitle>
+                    <CardDescription>
+                        Alle für diesen Fall generierten oder zusammengefassten Dokumente. Klicken Sie auf eine Zeile, um ein Dokument zu bearbeiten.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Titel</TableHead>
+                                <TableHead className='hidden sm:table-cell'>Erstellt am</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {documents.map((doc) => (
+                            <TableRow key={doc.id} onClick={() => handleRowClick(doc)} className="cursor-pointer">
+                                <TableCell className="font-medium">{doc.title}</TableCell>
+                                <TableCell className='hidden sm:table-cell'>{doc.createdAt}</TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Stammdaten & Notizen</CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-6 md:grid-cols-2 text-sm">
+                    <div className="space-y-2">
+                        <h4 className='font-semibold'>Kläger</h4>
+                        <p className='text-muted-foreground whitespace-pre-wrap'>{client.caseInfo.plaintiff}</p>
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className='font-semibold'>Beklagter</h4>
+                        <p className='text-muted-foreground whitespace-pre-wrap'>{client.caseInfo.defendant}</p>
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className='font-semibold'>Gericht / AZ</h4>
+                        <p className='text-muted-foreground'>{client.caseInfo.court}, {client.caseInfo.caseNumber}</p>
+                    </div>
+                     <div className="space-y-2">
+                        <h4 className='font-semibold'>Zusammenfassung</h4>
+                        <p className='text-muted-foreground'>{client.caseSummary}</p>
+                    </div>
+                </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="summary">
-            <SummaryGenerator onSave={handleSaveDocument} />
-          </TabsContent>
-          <TabsContent value="strategy">
-             <StrategyView defaultSummary={client.caseSummary} />
-          </TabsContent>
-           <TabsContent value="prediction">
-            <AnalysisView 
-              defaultSummary={client.caseSummary}
-              defaultCourtLocation={client.caseInfo.court}
-              defaultLegalArea={client.caseInfo.legalArea}
-              defaultCoreArgument={client.caseInfo.coreArgument}
+          <TabsContent value="generator">
+             <DocumentGenerator 
+                clientName={client.name} 
+                onSave={handleSaveDocument}
+                onNew={handleNewDocument}
+                selectedDocument={selectedDocument}
             />
           </TabsContent>
-          <TabsContent value="details">
-            <Card>
-              <CardHeader>
-                <CardTitle>Stammdaten des Falls</CardTitle>
-                <CardDescription>
-                  Parteien, Gericht und weitere Details zum Fall.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                    <div>
-                        <p className="font-semibold text-base mb-2">Kläger</p>
-                        <p className="whitespace-pre-wrap">{client.caseInfo.plaintiff}</p>
-                    </div>
-                     <div>
-                        <p className="font-semibold text-base mb-2">Beklagter</p>
-                        <p className="whitespace-pre-wrap">{client.caseInfo.defendant}</p>
-                    </div>
-                     <div>
-                        <p className="font-semibold text-base mb-2">Gericht</p>
-                        <p className="whitespace-pre-wrap">{client.caseInfo.court}</p>
-                    </div>
-                     <div>
-                        <p className="font-semibold text-base mb-2">Aktenzeichen</p>
-                        <p className="whitespace-pre-wrap">{client.caseInfo.caseNumber}</p>
-                    </div>
-                </div>
-                 <div className="pt-4 border-t">
-                    <p className="font-semibold text-base mb-2">Zusammenfassung des Falls</p>
-                    <p className="whitespace-pre-wrap text-sm">{client.caseSummary}</p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="scanner">
+              <SummaryGenerator onSave={handleSaveDocument}/>
           </TabsContent>
+           <TabsContent value="strategy">
+                <StrategyView defaultSummary={client.caseSummary}/>
+            </TabsContent>
+            <TabsContent value="prediction">
+                <AnalysisView 
+                    defaultCourtLocation={client.caseInfo.court}
+                    defaultLegalArea={client.caseInfo.legalArea}
+                    defaultCoreArgument={client.caseInfo.coreArgument}
+                    defaultSummary={client.caseSummary}
+                />
+            </TabsContent>
         </Tabs>
       </div>
     );
   }
+
+    
