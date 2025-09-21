@@ -16,9 +16,9 @@ const clients = [
 export default function ClientsPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Mandanten</h2>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center">
           {/* A dialog would be better here, but for simplicity, linking to a new page or handling in-place */}
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" /> Mandant hinzufügen
@@ -35,7 +35,7 @@ export default function ClientsPage() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead className="hidden md:table-cell">Email</TableHead>
-                <TableHead className="hidden md:table-cell">Telefon</TableHead>
+                <TableHead className="hidden lg:table-cell">Telefon</TableHead>
                 <TableHead><span className="sr-only">Aktionen</span></TableHead>
               </TableRow>
             </TableHeader>
@@ -44,7 +44,7 @@ export default function ClientsPage() {
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">{client.name}</TableCell>
                   <TableCell className="hidden md:table-cell">{client.email}</TableCell>
-                  <TableCell className="hidden md:table-cell">{client.phone}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{client.phone}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" asChild>
                       <Link href={`/clients/${client.id}`}>Details anzeigen</Link>

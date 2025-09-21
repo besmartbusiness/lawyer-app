@@ -14,9 +14,9 @@ const recentClients = [
 export default function DashboardPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h2>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center">
           <Button asChild>
             <Link href="/clients">
               <PlusCircle className="mr-2 h-4 w-4" /> Neuer Mandant
@@ -63,8 +63,8 @@ export default function DashboardPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Hinzugefügt am</TableHead>
+                <TableHead className="hidden sm:table-cell">Email</TableHead>
+                <TableHead className="hidden md:table-cell">Hinzugefügt am</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -73,8 +73,8 @@ export default function DashboardPage() {
                   <TableCell className="font-medium">
                      <Link href={`/clients/${client.id}`} className="hover:underline">{client.name}</Link>
                   </TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.added}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{client.email}</TableCell>
+                  <TableCell className="hidden md:table-cell">{client.added}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
