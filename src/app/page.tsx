@@ -50,11 +50,10 @@ export default function LandingPage() {
               </div>
               <div className="flex items-center justify-center">
                 <Image
-                  src="https://picsum.photos/seed/law-hero/600/400"
+                  src="https://images.pexels.com/photos/8112159/pexels-photo-8112159.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
                   width={600}
                   height={400}
                   alt="Hero"
-                  data-ai-hint="lawyer office"
                   className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
                 />
               </div>
@@ -122,7 +121,7 @@ export default function LandingPage() {
                 <Card>
                     <CardHeader>
                          <div className="flex items-center gap-4">
-                            <Image src="https://picsum.photos/seed/person1/40/40" alt="Avatar" width={40} height={40} className="rounded-full" data-ai-hint="person face"/>
+                            <Image src="https://images.pexels.com/photos/3760856/pexels-photo-3760856.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Avatar" width={40} height={40} className="rounded-full object-cover"/>
                             <div>
                                 <CardTitle className="text-left">Dr. Clara Schmidt</CardTitle>
                                 <CardDescription className="text-left">Fachanwältin für Arbeitsrecht</CardDescription>
@@ -136,7 +135,7 @@ export default function LandingPage() {
                 <Card>
                     <CardHeader>
                          <div className="flex items-center gap-4">
-                            <Image src="https://picsum.photos/seed/person2/40/40" alt="Avatar" width={40} height={40} className="rounded-full" data-ai-hint="person face"/>
+                            <Image src="https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Avatar" width={40} height={40} className="rounded-full object-cover"/>
                             <div>
                                 <CardTitle className="text-left">Markus Weber</CardTitle>
                                 <CardDescription className="text-left">Partner, M&A Kanzlei</CardDescription>
@@ -150,7 +149,7 @@ export default function LandingPage() {
                 <Card>
                     <CardHeader>
                          <div className="flex items-center gap-4">
-                            <Image src="https://picsum.photos/seed/person3/40/40" alt="Avatar" width={40} height={40} className="rounded-full" data-ai-hint="person face"/>
+                            <Image src="https://images.pexels.com/photos/1542085/pexels-photo-1542085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Avatar" width={40} height={40} className="rounded-full object-cover"/>
                             <div>
                                 <CardTitle className="text-left">Julia Richter</CardTitle>
                                 <CardDescription className="text-left">Syndikusanwältin</CardDescription>
