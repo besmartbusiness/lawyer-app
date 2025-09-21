@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Wand2, Percent, Scale, BrainCircuit, UserCheck, Check } from 'lucide-react';
+import { Loader2, Wand2, Percent, Scale, BrainCircuit, UserCheck, Check, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { predictiveAnalysis, PredictiveAnalysisOutput } from '@/ai/flows/predictive-analysis';
@@ -87,7 +87,7 @@ export function AnalysisView({
                         Prädiktive Analyse
                     </CardTitle>
                     <CardDescription>
-                    Bewerten Sie die Erfolgschancen Ihres Falles datengestützt. Geben Sie die Kerndaten ein, um eine Prognose basierend auf (simulierten) historischen Urteilen zu erhalten.
+                    Bewerten Sie die Erfolgschancen Ihres Falles datengestützt. Die KI durchsucht das Internet nach vergleichbaren Urteilen und liefert eine Prognose.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -143,7 +143,7 @@ export function AnalysisView({
                     <CardContent className="p-8 text-center">
                         <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary mb-4" />
                         <p className="text-lg font-semibold">Erstelle Prognose...</p>
-                        <p className="text-muted-foreground">Die KI analysiert (simulierte) historische Daten. Dies kann einen Moment dauern.</p>
+                        <p className="text-muted-foreground">Die KI durchsucht das Internet nach Vergleichsfällen. Dies kann einen Moment dauern.</p>
                     </CardContent>
                 </Card>
             )}
@@ -181,8 +181,18 @@ export function AnalysisView({
                                     <div key={index}>
                                         <p className="font-semibold">{item.argument}</p>
                                         <p className="text-sm text-muted-foreground">{item.analysis}</p>
-                                        <p className="text-sm font-bold text-right text-primary">{item.successRate}% Erfolgsquote</p>
-                                        <Progress value={item.successRate} className="h-2 mt-1" />
+                                        <div className='mt-2'>
+                                            <p className="text-sm font-bold text-right text-primary">{item.successRate}% Erfolgsquote</p>
+                                            <Progress value={item.successRate} className="h-2 mt-1" />
+                                        </div>
+                                        {item.sources && item.sources.length > 0 && (
+                                            <div className='mt-3'>
+                                                <h4 className='text-xs font-semibold flex items-center gap-1 text-muted-foreground'><Search className='h-3 w-3'/> Quellen</h4>
+                                                <div className='text-xs text-muted-foreground/80 pl-2 border-l ml-1.5 mt-1'>
+                                                    {item.sources.join(', ')}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </CardContent>
