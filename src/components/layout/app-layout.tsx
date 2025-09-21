@@ -75,7 +75,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar className='bg-sidebar text-sidebar-foreground'>
         <SidebarHeader className="p-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/dashboard" className="flex items-center gap-2.5">
                 <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-primary">
                     <Icons.Logo className="h-7 w-7" />
                 </Button>
@@ -87,8 +87,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === '/'} >
-                <Link href="/">
+              <SidebarMenuButton asChild isActive={pathname === '/dashboard'} >
+                <Link href="/dashboard">
                   <LayoutDashboard />
                   <span>Dashboard</span>
                 </Link>

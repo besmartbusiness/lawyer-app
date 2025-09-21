@@ -42,7 +42,7 @@ export default function LoginPage() {
     try {
       const auth = getAuth();
       await signInWithEmailAndPassword(auth, values.email, values.password);
-      router.push('/');
+      router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
