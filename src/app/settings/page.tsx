@@ -11,18 +11,23 @@ import { useAuth } from "@/lib/hooks/use-auth";
 import { Separator } from "@/components/ui/separator";
 import { getAuth, sendPasswordResetEmail, updateProfile } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Moon, Sun, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
+
 
 export default function SettingsPage() {
     const { user } = useAuth();
     const { toast } = useToast();
+    const { theme, setTheme } = useTheme();
 
     const [name, setName] = useState('');
     const [isEditingName, setIsEditingName] = useState(false);
     const [isSavingName, setIsSavingName] = useState(false);
     const [isSendingReset, setIsSendingReset] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         if (user?.displayName) {
             setName(user.displayName);
         }
@@ -53,7 +58,6 @@ export default function SettingsPage() {
     const handleResetPassword = async () => {
         if (!user || !user.email) return;
 
-        // Check if the user signed in with a password (not with Google, etc.)
         const isEmailProvider = user.providerData.some(
             (provider) => provider.providerId === 'password'
         );
@@ -88,6 +92,10 @@ export default function SettingsPage() {
     const handleCancelEdit = () => {
         setName(user?.displayName || '');
         setIsEditingName(false);
+    }
+
+    if (!mounted) {
+        return null;
     }
 
     return (
@@ -171,12 +179,22 @@ export default function SettingsPage() {
                         <div>
                             <h4 className="font-medium">Farbschema</h4>
                             <p className="text-sm text-muted-foreground">
-                                Wählen Sie zwischen hellem und dunklem Modus.
+                                Wählen Sie zwischen hellem, dunklem oder System-Modus.
                             </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                             <Button variant="outline" disabled>Hell</Button>
-                             <Button variant="secondary" disabled>Dunkel</Button>
+                        <div className="flex items-center gap-2 rounded-lg bg-muted p-1">
+                             <Button variant={theme === 'light' ? 'secondary' : 'ghost'} size="sm" onClick={() => setTheme('light')}>
+                                <Sun className="h-4 w-4" />
+                                <span className="sr-only">Light</span>
+                             </Button>
+                             <Button variant={theme === 'dark' ? 'secondary' : 'ghost'} size="sm" onClick={() => setTheme('dark')}>
+                                <Moon className="h-4 w-4" />
+                                <span className="sr-only">Dark</span>
+                             </Button>
+                              <Button variant={theme === 'system' ? 'secondary' : 'ghost'} size="sm" onClick={() => setTheme('system')}>
+                                <Monitor className="h-4 w-4" />
+                                <span className="sr-only">System</span>
+                             </Button>
                         </div>
                     </div>
                 </CardContent>

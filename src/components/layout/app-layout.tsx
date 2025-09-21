@@ -72,7 +72,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar className='bg-sidebar text-sidebar-foreground'>
         <SidebarHeader className="p-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2.5">
                 <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-primary">

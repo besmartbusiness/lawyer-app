@@ -3,6 +3,7 @@ import './globals.css';
 import { AuthProvider } from '@/lib/hooks/use-auth';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthLayoutWrapper } from '@/components/layout/auth-layout-wrapper';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Lexa.i.',
@@ -26,8 +27,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <AuthLayoutWrapper>{children}</AuthLayoutWrapper>
-          <Toaster />
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <AuthLayoutWrapper>{children}</AuthLayoutWrapper>
+            <Toaster />
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
