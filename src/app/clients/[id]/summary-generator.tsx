@@ -219,7 +219,7 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
                         placeholder="Die Zusammenfassung der KI wird hier angezeigt..."
                         value={summary}
                         readOnly
-                        className="flex-grow h-full bg-secondary/50"
+                        className="flex-grow min-h-[150px] bg-secondary/50"
                     />
                 </div>
             </div>

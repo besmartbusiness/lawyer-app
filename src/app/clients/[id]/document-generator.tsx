@@ -272,7 +272,7 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
     <>
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-start">
+        <div className="flex flex-wrap justify-between items-start gap-4">
             <div>
                 <CardTitle className="flex items-center gap-2">
                 <Icons.Gavel className="h-6 w-6" />
@@ -291,7 +291,7 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
         </div>
       </CardHeader>
       <CardContent className="grid gap-6">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="notes">Fallnotizen / Aktenvermerk / Diktat</Label>
