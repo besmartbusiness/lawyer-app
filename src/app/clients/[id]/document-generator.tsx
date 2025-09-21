@@ -292,7 +292,7 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
       </CardHeader>
       <CardContent className="grid gap-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="notes">Fallnotizen / Aktenvermerk / Diktat</Label>
                 <Button variant="ghost" size="icon" onClick={handleToggleRecording} title={isRecording ? "Aufnahme stoppen" : "Diktat starten"} disabled={isBusy}>
@@ -304,7 +304,7 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
                 placeholder="Geben Sie hier Notizen ein oder starten Sie ein Diktat..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="min-h-[200px] h-full"
+                className="min-h-[200px]"
                 disabled={isBusy}
               />
                {transcriptionError && (
@@ -327,15 +327,17 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
                 </div>
               )}
             </div>
+            <div className="space-y-2">
+                <Label htmlFor="document-title">Dokumententitel</Label>
+                <Input 
+                    id="document-title"
+                    placeholder="Geben Sie hier den Titel des Dokuments ein..."
+                    value={documentTitle}
+                    onChange={(e) => setDocumentTitle(e.target.value)}
+                    disabled={isBusy}
+                />
+            </div>
             <div className="space-y-2 flex flex-col">
-              <Label htmlFor="document-title">Dokumententitel</Label>
-              <Input 
-                id="document-title"
-                placeholder="Geben Sie hier den Titel des Dokuments ein..."
-                value={documentTitle}
-                onChange={(e) => setDocumentTitle(e.target.value)}
-                disabled={isBusy}
-              />
               <Label htmlFor="generated-doc">Generiertes Dokument</Label>
               <div className="relative flex-1">
                  <Textarea
@@ -450,6 +452,3 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
     </>
   );
 }
-
-    
-    
