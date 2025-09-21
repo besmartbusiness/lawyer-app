@@ -20,8 +20,6 @@ import {
   import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
   import { DocumentGenerator } from './document-generator';
   import { SummaryGenerator } from './summary-generator';
-  import { CaseStrategyView } from './strategy-view';
-  import { PredictiveAnalysisView } from './predictive-analysis-view';
 
 
   // Define the type for a document
@@ -89,7 +87,7 @@ import {
             setSelectedDocument(newDocument);
             
             // If the summary was saved, switch to the documents tab to show it
-            if (activeTab === 'summary' || activeTab === 'strategy' || activeTab === 'prediction') {
+            if (activeTab === 'summary') {
                 setActiveTab('documents');
             }
         }
@@ -119,8 +117,6 @@ import {
           <TabsList>
             <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
             <TabsTrigger value="summary">KI-Akten-Scanner</TabsTrigger>
-            <TabsTrigger value="strategy">KI-Strategie</TabsTrigger>
-            <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
             <TabsTrigger value="details">Stammdaten & Details</TabsTrigger>
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
@@ -166,12 +162,6 @@ import {
           </TabsContent>
           <TabsContent value="summary">
             <SummaryGenerator onSave={handleSaveDocument} />
-          </TabsContent>
-          <TabsContent value="strategy">
-            <CaseStrategyView caseSummary={client.caseSummary} />
-          </TabsContent>
-          <TabsContent value="prediction">
-            <PredictiveAnalysisView caseInfo={client.caseInfo} caseSummary={client.caseSummary} />
           </TabsContent>
           <TabsContent value="details">
             <Card>

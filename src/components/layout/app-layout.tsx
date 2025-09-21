@@ -115,16 +115,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
-              <SidebarMenuButton asChild >
-                <Link href="/clients/1">
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/case-strategy')}>
+                <Link href="/case-strategy">
                   <Lightbulb />
                   <span>KI-Stratege</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                 <Link href="/clients/1">
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/predictive-analysis')}>
+                 <Link href="/predictive-analysis">
                   <BrainCircuit />
                   <span>KI-Prognose</span>
                 </Link>
