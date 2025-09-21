@@ -247,5 +247,3 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
     </Card>
   );
 }
-
-    
