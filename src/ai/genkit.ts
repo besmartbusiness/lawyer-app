@@ -7,5 +7,5 @@ export const ai = genkit({
       location: 'europe-west1',
     }),
   ],
-  model: 'vertexai/gemini-2.5-flash',
+  model: 'vertexai/gemini-2.5-pro',
 });
