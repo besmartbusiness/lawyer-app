@@ -108,7 +108,7 @@ import {
             <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="h-auto flex-wrap justify-start">
+            <TabsList className="h-auto grid grid-cols-1 md:inline-flex md:flex-wrap md:justify-start">
                 <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
                 <TabsTrigger value="generator">KI-Dokumentengenerator</TabsTrigger>
                 <TabsTrigger value="scanner">KI-Akten-Scanner</TabsTrigger>
