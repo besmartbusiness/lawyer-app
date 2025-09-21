@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -80,6 +81,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </Button>
                 <h1 className="text-xl font-bold font-headline text-sidebar-primary-foreground group-data-[collapsible=icon]:hidden">Lexa.i.</h1>
             </Link>
+            {/* This trigger is only for the mobile sheet */}
             <SidebarTrigger className="md:hidden"/>
         </SidebarHeader>
         <SidebarContent>
@@ -154,8 +156,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset>
         <header className="flex items-center justify-between h-16 px-4 md:px-6 border-b">
             <div className="flex items-center gap-2">
+                {/* This trigger is for the desktop sidebar */}
                 <SidebarTrigger className="hidden md:flex"/>
-                {/* We can add breadcrumbs or page title here later */}
+                 {/* This trigger is for the mobile sheet - it's a clone of the one in the header but for the main content area */}
+                <div className="md:hidden">
+                    <SidebarTrigger />
+                </div>
             </div>
             <UserNav />
         </header>
