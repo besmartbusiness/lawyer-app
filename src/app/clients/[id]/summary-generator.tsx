@@ -225,8 +225,16 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-2">
-          <Button onClick={handleSummarize} disabled={isBusy || (!textToSummarize.trim() && !pdfDataUri)}>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
+          <Button onClick={handleSaveSummary} disabled={isBusy || !summary || !summaryTitle} variant="outline" className='w-full sm:w-auto'>
+              {isSaving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+              <Save className="mr-2 h-4 w-4" />
+              )}
+              Zusammenfassung speichern
+          </Button>
+          <Button onClick={handleSummarize} disabled={isBusy || (!textToSummarize.trim() && !pdfDataUri)} className='w-full sm:w-auto'>
             {isSummarizing ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -234,18 +242,8 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
             )}
             Zusammenfassung erstellen
           </Button>
-            <Button onClick={handleSaveSummary} disabled={isBusy || !summary || !summaryTitle} variant="outline">
-                {isSaving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                <Save className="mr-2 h-4 w-4" />
-                )}
-                Zusammenfassung speichern
-            </Button>
         </div>
       </CardContent>
     </Card>
   );
 }
-
-    
