@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 import { config } from 'dotenv';
 
@@ -28,6 +29,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
+        port: '',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
         port: '',
         pathname: '/**',
       },
