@@ -108,7 +108,7 @@ import {
             <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto pb-2">
                 <TabsList>
                     <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
                     <TabsTrigger value="generator">KI-Dokumentengenerator</TabsTrigger>
