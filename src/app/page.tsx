@@ -177,12 +177,12 @@ export default function LandingPage() {
             <div className="mx-auto w-full max-w-sm pt-8">
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle>Professional</CardTitle>
+                  <CardTitle>Premium</CardTitle>
                   <CardDescription>Für Einzelanwälte und kleine Kanzleien, die ihre Effizienz maximieren wollen.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-6">
                   <div className="text-4xl font-bold">
-                    €79 <span className="text-lg font-normal text-muted-foreground">/ Monat</span>
+                    €249 <span className="text-lg font-normal text-muted-foreground">+ MwSt. / Monat</span>
                   </div>
                   <ul className="grid gap-2 text-left text-sm">
                     <li className="flex items-center gap-2">
