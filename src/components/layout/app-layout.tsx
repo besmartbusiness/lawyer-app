@@ -79,7 +79,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-primary">
                     <Icons.Logo className="h-7 w-7" />
                 </Button>
-                <h1 className="text-xl font-bold font-headline text-sidebar-primary-foreground group-data-[collapsible=icon]:hidden">Lexa.i.</h1>
+                <h1 className="text-xl font-bold font-headline text-sidebar-primary-foreground group-data-[collapsible=icon]:hidden">Legiscribe</h1>
             </Link>
             {/* This trigger is only for the mobile sheet */}
             <SidebarTrigger className="md:hidden"/>

@@ -13,7 +13,7 @@ export default function LandingPage() {
       <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm sticky top-0 z-50 bg-background/95 backdrop-blur-sm">
         <Link href="#" className="flex items-center justify-center gap-2">
           <Icons.Logo className="h-7 w-7 text-primary" />
-          <span className="text-xl font-bold font-headline text-primary">Lexa.i.</span>
+          <span className="text-xl font-bold font-headline text-primary">Legiscribe</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Link href="/login" className="text-sm font-medium hover:underline underline-offset-4">
@@ -36,7 +36,7 @@ export default function LandingPage() {
                     Die Zukunft der juristischen Arbeit. Automatisiert. Präzise. Effizient.
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Lexa.i. ist Ihr KI-Assistent, der Routineaufgaben automatisiert, komplexe Dokumente analysiert und Ihnen hilft, sich auf das Wesentliche zu konzentrieren: die perfekte Strategie für Ihre Mandanten.
+                    Legiscribe ist Ihr KI-Assistent, der Routineaufgaben automatisiert, komplexe Dokumente analysiert und Ihnen hilft, sich auf das Wesentliche zu konzentrieren: die perfekte Strategie für Ihre Mandanten.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -114,7 +114,7 @@ export default function LandingPage() {
                 <div className="space-y-3">
                 <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight font-headline">Vertraut von führenden Anwälten</h2>
                 <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                    Lesen Sie, wie Kanzleien wie Ihre mit Lexa.i. ihre Arbeitsweise transformieren.
+                    Lesen Sie, wie Kanzleien wie Ihre mit Legiscribe ihre Arbeitsweise transformieren.
                 </p>
                 </div>
                 <div className="grid w-full grid-cols-1 lg:grid-cols-3 gap-6 pt-8">
@@ -129,7 +129,7 @@ export default function LandingPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm italic">"Lexa.i. hat die Zeit für die Schriftsatzerstellung halbiert. Ich kann mich jetzt mehr auf die strategische Mandantenberatung konzentrieren. Ein absoluter Game-Changer."</p>
+                        <p className="text-sm italic">"Legiscribe hat die Zeit für die Schriftsatzerstellung halbiert. Ich kann mich jetzt mehr auf die strategische Mandantenberatung konzentrieren. Ein absoluter Game-Changer."</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -231,13 +231,13 @@ export default function LandingPage() {
                     <AccordionItem value="item-2">
                         <AccordionTrigger>Kann ich meine eigenen Vorlagen und Textbausteine verwenden?</AccordionTrigger>
                         <AccordionContent>
-                        Ja, absolut. Lexa.i. verfügt über eine integrierte Verwaltung für Ihre kanzlei-eigenen Dokumentvorlagen und wiederverwendbaren Textbausteine, auf die die KI intelligent zugreifen kann.
+                        Ja, absolut. Legiscribe verfügt über eine integrierte Verwaltung für Ihre kanzlei-eigenen Dokumentvorlagen und wiederverwendbaren Textbausteine, auf die die KI intelligent zugreifen kann.
                         </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-3">
                         <AccordionTrigger>Wie funktioniert die 14-tägige Testphase?</AccordionTrigger>
                         <AccordionContent>
-                        Sie können Lexa.i. 14 Tage lang mit vollem Funktionsumfang kostenlos und unverbindlich testen. Es ist keine Kreditkarte erforderlich. Nach Ablauf der Testphase können Sie entscheiden, ob Sie ein Abonnement abschließen möchten.
+                        Sie können Legiscribe 14 Tage lang mit vollem Funktionsumfang kostenlos und unverbindlich testen. Es ist keine Kreditkarte erforderlich. Nach Ablauf der Testphase können Sie entscheiden, ob Sie ein Abonnement abschließen möchten.
                         </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-4">
@@ -253,7 +253,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Lexa.i. Alle Rechte vorbehalten.</p>
+        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Legiscribe. Alle Rechte vorbehalten.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="#" className="text-xs hover:underline underline-offset-4">
             Impressum

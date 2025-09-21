@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { CookieBanner } from '@/components/cookie-banner';
 
 export const metadata: Metadata = {
-  title: 'Lexa.i.',
+  title: 'Legiscribe',
   description: 'AI-powered legal document generation for lawyers',
 };
 
