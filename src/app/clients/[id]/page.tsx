@@ -20,6 +20,8 @@ import {
   import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
   import { DocumentGenerator } from './document-generator';
   import { SummaryGenerator } from './summary-generator';
+  import { StrategyView } from '../case-strategy/strategy-view';
+  import { AnalysisView } from '../predictive-analysis/analysis-view';
 
 
   // Define the type for a document
@@ -39,7 +41,9 @@ import {
         plaintiff: "Max Mustermann\nMusterstraße 1\n12345 Musterstadt",
         defendant: "Gegenpartei GmbH\nFirmenweg 2\n54321 Firmenstadt",
         court: "Amtsgericht Musterstadt",
-        caseNumber: "123 C 456/24"
+        caseNumber: "123 C 456/24",
+        legalArea: "Vertragsrecht",
+        coreArgument: "Nichterfüllung des Kaufvertrags"
     },
     caseSummary: "Erstes Beratungsgespräch bezüglich eines Vertragsstreits mit einem Lieferanten. Der Mandant behauptet die Nichtlieferung von Waren trotz vollständiger Bezahlung. Vertrag unterzeichnet am 15. Januar 2024."
   };
@@ -87,7 +91,7 @@ import {
             setSelectedDocument(newDocument);
             
             // If the summary was saved, switch to the documents tab to show it
-            if (activeTab === 'summary') {
+            if (activeTab === 'summary' || activeTab === 'strategy' || activeTab === 'prediction') {
                 setActiveTab('documents');
             }
         }
@@ -117,6 +121,8 @@ import {
           <TabsList>
             <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
             <TabsTrigger value="summary">KI-Akten-Scanner</TabsTrigger>
+            <TabsTrigger value="strategy">KI-Stratege</TabsTrigger>
+            <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
             <TabsTrigger value="details">Stammdaten & Details</TabsTrigger>
           </TabsList>
           <TabsContent value="documents" className="space-y-4">
@@ -163,6 +169,17 @@ import {
           <TabsContent value="summary">
             <SummaryGenerator onSave={handleSaveDocument} />
           </TabsContent>
+          <TabsContent value="strategy">
+             <StrategyView defaultSummary={client.caseSummary} />
+          </TabsContent>
+           <TabsContent value="prediction">
+            <AnalysisView 
+              defaultSummary={client.caseSummary}
+              defaultCourtLocation={client.caseInfo.court}
+              defaultLegalArea={client.caseInfo.legalArea}
+              defaultCoreArgument={client.caseInfo.coreArgument}
+            />
+          </TabsContent>
           <TabsContent value="details">
             <Card>
               <CardHeader>
@@ -201,5 +218,3 @@ import {
       </div>
     );
   }
-
-    
