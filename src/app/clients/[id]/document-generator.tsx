@@ -276,7 +276,7 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
             <div>
                 <CardTitle className="flex items-center gap-2">
                 <Icons.Gavel className="h-6 w-6" />
-                KI-Dokumentengenerator
+                KI-Generator
                 </CardTitle>
                 <CardDescription>
                 Nutzen Sie /vorlage [Name] für Dokumentvorlagen und /einfügen [Kürzel] für Textbausteine.
@@ -398,22 +398,22 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
             </div>
         )}
 
-         <div className="flex items-center justify-end gap-2">
-            <Button onClick={handleGenerate} disabled={isBusy || !notes}>
-                {isGenerating || isSuggesting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                <Wand2 className="mr-2 h-4 w-4" />
-                )}
-                Aus Notizen generieren
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving || !generatedDoc || !documentTitle} variant="outline">
+         <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2">
+            <Button onClick={handleSave} disabled={isSaving || !generatedDoc || !documentTitle} variant="outline" className="w-full sm:w-auto">
                 {isSaving ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                 <Save className="mr-2 h-4 w-4" />
                 )}
                 Dokument speichern
+            </Button>
+            <Button onClick={handleGenerate} disabled={isBusy || !notes} className="w-full sm:w-auto">
+                {isGenerating || isSuggesting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                <Wand2 className="mr-2 h-4 w-4" />
+                )}
+                Aus Notizen generieren
             </Button>
             </div>
       </CardContent>
@@ -451,4 +451,5 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
   );
 }
 
+    
     
