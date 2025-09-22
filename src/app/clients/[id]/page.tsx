@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, updateDoc, addDoc, collection, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -57,8 +58,9 @@ import { Skeleton } from '@/components/ui/skeleton';
   };
 
   
-  export default function ClientDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
+  export default function ClientDetailPage() {
+    const params = useParams();
+    const id = params.id as string;
     const { user, loading: authLoading } = useAuth();
     const { toast } = useToast();
 
@@ -108,7 +110,7 @@ import { Skeleton } from '@/components/ui/skeleton';
       const docsQuery = query(
         collection(db, 'documents'),
         where('clientId', '==', id),
-        where('userId', '==', user.uid), // Ensure user can only query their own documents
+        where('userId', '==', user.uid),
         orderBy('createdAt', 'desc')
       );
       const unsubscribe = onSnapshot(docsQuery, (querySnapshot) => {
@@ -295,7 +297,7 @@ import { Skeleton } from '@/components/ui/skeleton';
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Stammdaten & Notizen</CardTitle>
+                    <CardTitle>Stammdaten &amp; Notizen</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid gap-6 md:grid-cols-2 text-sm">
@@ -356,6 +358,3 @@ import { Skeleton } from '@/components/ui/skeleton';
       </div>
     );
   }
-
-    
-
