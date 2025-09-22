@@ -2,26 +2,34 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // --- Clients Collection ---
-    // Users can only read, write, and delete their own client documents.
-    // The userId on the document must match the authenticated user's UID.
+
+    // Rules for the clients collection
     match /clients/{clientId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // A user can read a client document if they are the owner.
+      // This applies to both get() and list() queries.
+      // The client-side query MUST use a where("userId", "==", request.auth.uid) clause.
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // A user can create, update, or delete a client document if they are the owner.
+      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
-    // --- Text Blocks Collection ---
-    // Users can only manage their own text blocks.
+    // Rules for the text_blocks collection
     match /text_blocks/{textBlockId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // A user can read their own text blocks.
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // A user can write to their own text blocks.
+      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
-    // --- Document Templates Collection ---
-    // Users can only manage their own document templates.
-    match /doc_templates/{templateId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    // Rules for the doc_templates collection
+    match /doc_templates/{docTemplateId} {
+      // A user can read their own document templates.
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // A user can write to their own document templates.
+      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
   }
 }
