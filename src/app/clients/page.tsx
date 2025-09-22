@@ -1,29 +1,60 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle } from "lucide-react";
-import Link from "next/link";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-// Mock data - replace with Firestore data fetching
-const clients = [
-  { id: "1", name: "John Doe", email: "john.doe@example.com", phone: "123-456-7890" },
-  { id: "2", name: "Jane Smith", email: "jane.smith@example.com", phone: "234-567-8901" },
-  { id: "3", name: "Peter Jones", email: "peter.jones@example.com", phone: "345-678-9012" },
-  { id: "4", name: "Acme Corporation", email: "contact@acme.com", phone: "456-789-0123" },
-  { id: "5", name: "Stark Industries", email: "pepper@stark.com", phone: "567-890-1234" },
-];
+'use client';
+
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AddClientDialog } from './add-client-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+
+type Client = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+};
 
 export default function ClientsPage() {
+  const { user } = useAuth();
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    setLoading(true);
+    const q = query(collection(db, 'clients'), orderBy('createdAt', 'desc'));
+    
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const clientsData: Client[] = [];
+      querySnapshot.forEach((doc) => {
+        clientsData.push({ id: doc.id, ...doc.data() } as Client);
+      });
+      setClients(clientsData);
+      setLoading(false);
+    }, (error) => {
+        console.error("Error fetching clients: ", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  const handleClientAdded = (newClient: Client) => {
+    // Optimistic update, although onSnapshot should handle it.
+    setClients(prevClients => [newClient, ...prevClients]);
+  };
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Mandanten</h2>
-        <div className="flex items-center">
-          {/* A dialog would be better here, but for simplicity, linking to a new page or handling in-place */}
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" /> Mandant hinzufügen
-          </Button>
-        </div>
+        <AddClientDialog onClientAdded={handleClientAdded} />
       </div>
       <Card>
         <CardHeader>
@@ -40,18 +71,36 @@ export default function ClientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clients.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell className="hidden md:table-cell">{client.email}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{client.phone}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" asChild>
-                      <Link href={`/clients/${client.id}`}>Details anzeigen</Link>
-                    </Button>
-                  </TableCell>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-48" /></TableCell>
+                    <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-24" /></TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                clients.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">{client.name}</TableCell>
+                    <TableCell className="hidden md:table-cell">{client.email}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{client.phone}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" asChild>
+                        <Link href={`/clients/${client.id}`}>Details anzeigen</Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+               {!loading && clients.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={4} className="text-center h-24">
+                        Noch keine Mandanten hinzugefügt.
+                    </TableCell>
                 </TableRow>
-              ))}
+               )}
             </TableBody>
           </Table>
         </CardContent>
