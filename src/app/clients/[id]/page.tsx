@@ -58,7 +58,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 
   
   export default function ClientDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
     const { user, loading: authLoading } = useAuth();
     const { toast } = useToast();
 
@@ -73,9 +72,9 @@ import { Skeleton } from '@/components/ui/skeleton';
     
     // Fetch client data
     useEffect(() => {
-        if (!user || !id) return;
+        if (!user || !params.id) return;
         setIsLoadingClient(true);
-        const clientDocRef = doc(db, 'clients', id);
+        const clientDocRef = doc(db, 'clients', params.id);
         const unsubscribe = onSnapshot(clientDocRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
@@ -99,15 +98,15 @@ import { Skeleton } from '@/components/ui/skeleton';
             setIsLoadingClient(false);
         });
         return () => unsubscribe();
-    }, [id, user, toast]);
+    }, [params.id, user, toast]);
 
     // Fetch documents for the client
     useEffect(() => {
-      if (!user || !id) return;
+      if (!user || !params.id) return;
       setIsLoadingDocuments(true);
       const docsQuery = query(
         collection(db, 'documents'),
-        where('clientId', '==', id),
+        where('clientId', '==', params.id),
         where('userId', '==', user.uid), // Ensure user can only query their own documents
         orderBy('createdAt', 'desc')
       );
@@ -132,11 +131,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 
       return () => unsubscribe();
 
-    }, [id, user, toast]);
+    }, [params.id, user, toast]);
 
 
     const handleSaveDocument = async (docToSave: { title: string; content: string; notes: string; }) => {
-        if (!user || !id) {
+        if (!user || !params.id) {
             toast({ variant: 'destructive', title: 'Fehler', description: 'Sie müssen angemeldet sein und einen Mandanten ausgewählt haben.' });
             return;
         }
@@ -144,7 +143,7 @@ import { Skeleton } from '@/components/ui/skeleton';
         try {
             await addDoc(collection(db, 'documents'), {
                 ...docToSave,
-                clientId: id,
+                clientId: params.id,
                 userId: user.uid,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
@@ -190,7 +189,7 @@ import { Skeleton } from '@/components/ui/skeleton';
         if (!client) return;
         setIsSaving(true);
         try {
-            const clientDocRef = doc(db, 'clients', id);
+            const clientDocRef = doc(db, 'clients', params.id);
             await updateDoc(clientDocRef, {
                 caseInfo: client.caseInfo,
                 caseSummary: client.caseSummary
