@@ -20,11 +20,15 @@ type Client = {
 };
 
 export default function ClientsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) {
+        // Wait until authentication status is resolved
+        return;
+    }
     if (!user) {
         // If there's no user, we can stop loading and show an empty state.
         // The auth hook will redirect to login anyway.
@@ -53,12 +57,14 @@ export default function ClientsPage() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleClientAdded = (newClient: Client) => {
-    // Optimistic update, although onSnapshot should handle it.
-    setClients(prevClients => [newClient, ...prevClients]);
+    // No optimistic update needed here. 
+    // The onSnapshot listener will automatically update the state.
   };
+
+  const isLoading = loading || authLoading;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -81,7 +87,7 @@ export default function ClientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
+              {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
@@ -104,7 +110,7 @@ export default function ClientsPage() {
                   </TableRow>
                 ))
               )}
-               {!loading && clients.length === 0 && (
+               {!isLoading && clients.length === 0 && (
                 <TableRow>
                     <TableCell colSpan={4} className="text-center h-24">
                         Noch keine Mandanten hinzugefügt.
