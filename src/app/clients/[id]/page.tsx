@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, updateDoc, collection, query, where, orderBy } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, addDoc, collection, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,7 +57,7 @@ import { Skeleton } from '@/components/ui/skeleton';
   };
 
   
-  export default function ClientDetailPage({ params }: { params: { id: string } }) {
+  export default function ClientDetailPage({ params: { id } }: { params: { id: string } }) {
     const { user, loading: authLoading } = useAuth();
     const { toast } = useToast();
 
@@ -72,9 +72,9 @@ import { Skeleton } from '@/components/ui/skeleton';
     
     // Fetch client data
     useEffect(() => {
-        if (!user) return;
+        if (!user || !id) return;
         setIsLoadingClient(true);
-        const clientDocRef = doc(db, 'clients', params.id);
+        const clientDocRef = doc(db, 'clients', id);
         const unsubscribe = onSnapshot(clientDocRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
@@ -92,15 +92,15 @@ import { Skeleton } from '@/components/ui/skeleton';
             setIsLoadingClient(false);
         });
         return () => unsubscribe();
-    }, [params.id, user, toast]);
+    }, [id, user, toast]);
 
     // Fetch documents for the client
     useEffect(() => {
-      if (!user) return;
+      if (!user || !id) return;
       setIsLoadingDocuments(true);
       const docsQuery = query(
         collection(db, 'documents'),
-        where('clientId', '==', params.id),
+        where('clientId', '==', id),
         orderBy('createdAt', 'desc')
       );
       const unsubscribe = onSnapshot(docsQuery, (querySnapshot) => {
@@ -120,13 +120,29 @@ import { Skeleton } from '@/components/ui/skeleton';
 
       return () => unsubscribe();
 
-    }, [params.id, user]);
+    }, [id, user]);
 
 
-    const handleSaveDocument = (doc: { title: string; content: string; notes: string; }) => {
-        // This function will now be handled by the document generator which saves to the DB.
-        // The onSnapshot listener will update the UI automatically.
-        setActiveTab("overview");
+    const handleSaveDocument = async (docToSave: { title: string; content: string; notes: string; }) => {
+        if (!user || !id) {
+            toast({ variant: 'destructive', title: 'Fehler', description: 'Sie müssen angemeldet sein und einen Mandanten ausgewählt haben.' });
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, 'documents'), {
+                ...docToSave,
+                clientId: id,
+                userId: user.uid,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+            });
+            // The onSnapshot listener will update the UI automatically.
+            setActiveTab("overview");
+        } catch(error) {
+            console.error("Error saving document: ", error);
+            toast({ variant: 'destructive', title: 'Speicherfehler', description: 'Das Dokument konnte nicht gespeichert werden.' });
+        }
     };
 
     const handleNewDocument = () => {
@@ -162,7 +178,7 @@ import { Skeleton } from '@/components/ui/skeleton';
         if (!client) return;
         setIsSaving(true);
         try {
-            const clientDocRef = doc(db, 'clients', params.id);
+            const clientDocRef = doc(db, 'clients', id);
             await updateDoc(clientDocRef, {
                 caseInfo: client.caseInfo,
                 caseSummary: client.caseSummary
@@ -328,3 +344,5 @@ import { Skeleton } from '@/components/ui/skeleton';
       </div>
     );
   }
+
+    
