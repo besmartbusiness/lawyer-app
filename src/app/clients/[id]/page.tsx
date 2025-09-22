@@ -1,7 +1,11 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot, updateDoc, collection, query, where, orderBy } from 'firebase/firestore';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -22,71 +26,107 @@ import {
   import { SummaryGenerator } from './summary-generator';
   import { StrategyView } from '@/app/case-strategy/strategy-view';
   import { AnalysisView } from '@/app/predictive-analysis/analysis-view';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Save } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
   // Define the type for a document
   type Document = {
     id: string;
     title: string;
-    createdAt: string;
+    createdAt: string; // Keep as string for display
     content: string;
     notes: string;
   };
-  
-  // Mock data for a single client
-  const client = {
-    id: "1",
-    name: "Max Mustermann vs. Gegenpartei GmbH",
-    caseInfo: {
-        plaintiff: "Max Mustermann\nMusterstraße 1\n12345 Musterstadt",
-        defendant: "Gegenpartei GmbH\nFirmenweg 2\n54321 Firmenstadt",
-        court: "Amtsgericht Musterstadt",
-        caseNumber: "123 C 456/24",
-        legalArea: "Vertragsrecht",
-        coreArgument: "Nichterfüllung des Kaufvertrags"
-    },
-    caseSummary: "Erstes Beratungsgespräch bezüglich eines Vertragsstreits mit einem Lieferanten. Der Mandant behauptet die Nichtlieferung von Waren trotz vollständiger Bezahlung. Vertrag unterzeichnet am 15. Januar 2024."
+
+  type Client = {
+      id: string;
+      name: string;
+      caseInfo: {
+        plaintiff: string;
+        defendant: string;
+        court: string;
+        caseNumber: string;
+        legalArea: string;
+        coreArgument: string;
+      },
+      caseSummary: string;
   };
-  
-  // Initial mock documents
-  const initialDocuments: Document[] = [
-    { id: "doc1", title: "Erstes Aufforderungsschreiben", createdAt: "2024-05-21", content: "Inhalt des ersten Aufforderungsschreibens...", notes: client.caseSummary },
-    { id: "doc2", title: "Mandantenvereinbarung", createdAt: "2024-05-20", content: "Inhalt der Mandantenvereinbarung...", notes: client.caseSummary },
-  ];
+
   
   export default function ClientDetailPage({ params }: { params: { id: string } }) {
-    const [documents, setDocuments] = useState<Document[]>(initialDocuments);
+    const { user, loading: authLoading } = useAuth();
+    const { toast } = useToast();
+
+    const [client, setClient] = useState<Client | null>(null);
+    const [documents, setDocuments] = useState<Document[]>([]);
     const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-    const [activeTab, setActiveTab] = useState("documents");
+    const [activeTab, setActiveTab] = useState("overview");
+
+    const [isLoadingClient, setIsLoadingClient] = useState(true);
+    const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    
+    // Fetch client data
+    useEffect(() => {
+        if (!user) return;
+        setIsLoadingClient(true);
+        const clientDocRef = doc(db, 'clients', params.id);
+        const unsubscribe = onSnapshot(clientDocRef, (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                setClient({
+                    id: doc.id,
+                    name: data.name || '',
+                    caseInfo: data.caseInfo || {
+                        plaintiff: "", defendant: "", court: "", caseNumber: "", legalArea: "", coreArgument: ""
+                    },
+                    caseSummary: data.caseSummary || ''
+                });
+            } else {
+                toast({ variant: 'destructive', title: 'Fehler', description: 'Mandant nicht gefunden.' });
+            }
+            setIsLoadingClient(false);
+        });
+        return () => unsubscribe();
+    }, [params.id, user, toast]);
+
+    // Fetch documents for the client
+    useEffect(() => {
+      if (!user) return;
+      setIsLoadingDocuments(true);
+      const docsQuery = query(
+        collection(db, 'documents'),
+        where('clientId', '==', params.id),
+        orderBy('createdAt', 'desc')
+      );
+      const unsubscribe = onSnapshot(docsQuery, (querySnapshot) => {
+        const docsData = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title,
+                createdAt: data.createdAt?.toDate().toISOString().split('T')[0] || '',
+                content: data.content,
+                notes: data.notes
+            }
+        });
+        setDocuments(docsData);
+        setIsLoadingDocuments(false);
+      });
+
+      return () => unsubscribe();
+
+    }, [params.id, user]);
 
 
     const handleSaveDocument = (doc: { title: string; content: string; notes: string; }) => {
-        const existingDocIndex = selectedDocument ? documents.findIndex(d => d.id === selectedDocument.id) : -1;
-
-        if (existingDocIndex > -1) {
-            // Update existing document
-            setDocuments(docs => {
-                const updatedDocuments = [...docs];
-                const updatedDoc = {
-                    ...updatedDocuments[existingDocIndex],
-                    ...doc,
-                };
-                updatedDocuments[existingDocIndex] = updatedDoc;
-                setSelectedDocument(updatedDoc); // Ensure the selected document is the updated one
-                return updatedDocuments;
-            });
-        } else {
-            // Add new document
-            const newDoc = {
-                id: `doc${Date.now()}`,
-                createdAt: new Date().toISOString().split('T')[0],
-                ...doc,
-            };
-            const newDocuments = [newDoc, ...documents];
-            setDocuments(newDocuments);
-            setSelectedDocument(newDoc); // Select the newly created document
-        }
-        setActiveTab("documents");
+        // This function will now be handled by the document generator which saves to the DB.
+        // The onSnapshot listener will update the UI automatically.
+        setActiveTab("overview");
     };
 
     const handleNewDocument = () => {
@@ -98,6 +138,75 @@ import {
         setSelectedDocument(doc);
         setActiveTab("generator");
     };
+
+    const handleMasterDataChange = (field: keyof Client['caseInfo'] | 'caseSummary', value: string) => {
+        if (!client) return;
+    
+        if (field === 'caseSummary') {
+            setClient({
+                ...client,
+                caseSummary: value
+            });
+        } else {
+            setClient({
+                ...client,
+                caseInfo: {
+                    ...client.caseInfo,
+                    [field]: value
+                }
+            });
+        }
+    };
+    
+    const handleSaveMasterData = async () => {
+        if (!client) return;
+        setIsSaving(true);
+        try {
+            const clientDocRef = doc(db, 'clients', params.id);
+            await updateDoc(clientDocRef, {
+                caseInfo: client.caseInfo,
+                caseSummary: client.caseSummary
+            });
+            toast({
+                title: 'Gespeichert',
+                description: 'Die Stammdaten wurden erfolgreich aktualisiert.',
+            });
+        } catch (error) {
+            console.error("Error updating master data: ", error);
+            toast({ variant: 'destructive', title: 'Speicherfehler', description: 'Die Stammdaten konnten nicht aktualisiert werden.' });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (isLoadingClient || authLoading) {
+        return (
+             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+                <Skeleton className='h-10 w-3/4 mb-2'/>
+                <Skeleton className='h-6 w-1/4 mb-6'/>
+                <div className='flex gap-2 mb-4'>
+                    <Skeleton className='h-10 w-24'/>
+                    <Skeleton className='h-10 w-24'/>
+                    <Skeleton className='h-10 w-24'/>
+                </div>
+                <Card>
+                    <CardHeader><Skeleton className='h-8 w-1/3'/></CardHeader>
+                    <CardContent className='space-y-2'>
+                        <Skeleton className='h-8 w-full'/>
+                        <Skeleton className='h-8 w-full'/>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
+    if (!client) {
+        return (
+            <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+                <p>Mandant konnte nicht geladen werden.</p>
+            </div>
+        );
+    }
   
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -109,13 +218,13 @@ import {
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="h-auto grid grid-cols-1 md:inline-flex md:flex-wrap md:justify-start">
-                <TabsTrigger value="documents">KI-Dokumente</TabsTrigger>
+                <TabsTrigger value="overview">Übersicht</TabsTrigger>
                 <TabsTrigger value="generator">KI-Generator</TabsTrigger>
                 <TabsTrigger value="scanner">KI-Akten-Scanner</TabsTrigger>
                 <TabsTrigger value="strategy">KI-Stratege</TabsTrigger>
                 <TabsTrigger value="prediction">KI-Prognose</TabsTrigger>
             </TabsList>
-          <TabsContent value="documents" className="space-y-4">
+          <TabsContent value="overview" className="space-y-4">
             <Card>
                 <CardHeader>
                     <CardTitle>Dokumentenübersicht</CardTitle>
@@ -132,12 +241,26 @@ import {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {documents.map((doc) => (
-                            <TableRow key={doc.id} onClick={() => handleRowClick(doc)} className="cursor-pointer">
-                                <TableCell className="font-medium">{doc.title}</TableCell>
-                                <TableCell className='hidden sm:table-cell'>{doc.createdAt}</TableCell>
+                        {isLoadingDocuments ? (
+                            <TableRow>
+                                <TableCell colSpan={2} className="h-24 text-center">
+                                    <Loader2 className="mx-auto animate-spin" />
+                                </TableCell>
                             </TableRow>
-                        ))}
+                        ) : documents.length === 0 ? (
+                             <TableRow>
+                                <TableCell colSpan={2} className="h-24 text-center">
+                                    Noch keine Dokumente für diesen Fall erstellt.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            documents.map((doc) => (
+                                <TableRow key={doc.id} onClick={() => handleRowClick(doc)} className="cursor-pointer">
+                                    <TableCell className="font-medium">{doc.title}</TableCell>
+                                    <TableCell className='hidden sm:table-cell'>{doc.createdAt}</TableCell>
+                                </TableRow>
+                            ))
+                        )}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -146,22 +269,35 @@ import {
                 <CardHeader>
                     <CardTitle>Stammdaten & Notizen</CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-6 md:grid-cols-2 text-sm">
-                    <div className="space-y-2">
-                        <h4 className='font-semibold'>Kläger</h4>
-                        <p className='text-muted-foreground whitespace-pre-wrap'>{client.caseInfo.plaintiff}</p>
+                <CardContent className="space-y-6">
+                    <div className="grid gap-6 md:grid-cols-2 text-sm">
+                        <div className="space-y-2">
+                            <Label htmlFor="plaintiff">Kläger</Label>
+                            <Textarea id="plaintiff" value={client.caseInfo.plaintiff} onChange={e => handleMasterDataChange('plaintiff', e.target.value)} placeholder="Name und Adresse des Klägers" className='min-h-[100px]'/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="defendant">Beklagter</Label>
+                            <Textarea id="defendant" value={client.caseInfo.defendant} onChange={e => handleMasterDataChange('defendant', e.target.value)} placeholder="Name und Adresse des Beklagten" className='min-h-[100px]'/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="court">Gericht / AZ</Label>
+                            <Textarea id="court" value={client.caseInfo.court + (client.caseInfo.caseNumber ? ', ' + client.caseInfo.caseNumber : '')} 
+                            onChange={e => {
+                                const parts = e.target.value.split(',');
+                                handleMasterDataChange('court', parts[0] || '');
+                                handleMasterDataChange('caseNumber', parts.slice(1).join(',').trim());
+                            }} placeholder="Gericht, Aktenzeichen" />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="caseSummary">Zusammenfassung</Label>
+                            <Textarea id="caseSummary" value={client.caseSummary} onChange={e => handleMasterDataChange('caseSummary', e.target.value)} placeholder="Kurze Zusammenfassung des Falls..." className='min-h-[100px]'/>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <h4 className='font-semibold'>Beklagter</h4>
-                        <p className='text-muted-foreground whitespace-pre-wrap'>{client.caseInfo.defendant}</p>
-                    </div>
-                    <div className="space-y-2">
-                        <h4 className='font-semibold'>Gericht / AZ</h4>
-                        <p className='text-muted-foreground'>{client.caseInfo.court}, {client.caseInfo.caseNumber}</p>
-                    </div>
-                     <div className="space-y-2">
-                        <h4 className='font-semibold'>Zusammenfassung</h4>
-                        <p className='text-muted-foreground'>{client.caseSummary}</p>
+                     <div className="flex justify-end">
+                        <Button onClick={handleSaveMasterData} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                            Stammdaten speichern
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -192,6 +328,3 @@ import {
       </div>
     );
   }
-
-    
-    
