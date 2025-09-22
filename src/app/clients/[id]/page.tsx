@@ -57,7 +57,8 @@ import { Skeleton } from '@/components/ui/skeleton';
   };
 
   
-  export default function ClientDetailPage({ params: { id } }: { params: { id: string } }) {
+  export default function ClientDetailPage({ params }: { params: { id: string } }) {
+    const { id } = params;
     const { user, loading: authLoading } = useAuth();
     const { toast } = useToast();
 
@@ -78,14 +79,20 @@ import { Skeleton } from '@/components/ui/skeleton';
         const unsubscribe = onSnapshot(clientDocRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
-                setClient({
-                    id: doc.id,
-                    name: data.name || '',
-                    caseInfo: data.caseInfo || {
-                        plaintiff: "", defendant: "", court: "", caseNumber: "", legalArea: "", coreArgument: ""
-                    },
-                    caseSummary: data.caseSummary || ''
-                });
+                // Security check: ensure the client belongs to the user
+                if (data.userId !== user.uid) {
+                    toast({ variant: 'destructive', title: 'Zugriff verweigert', description: 'Sie haben keine Berechtigung, diesen Mandanten anzuzeigen.' });
+                    setClient(null);
+                } else {
+                    setClient({
+                        id: doc.id,
+                        name: data.name || '',
+                        caseInfo: data.caseInfo || {
+                            plaintiff: "", defendant: "", court: "", caseNumber: "", legalArea: "", coreArgument: ""
+                        },
+                        caseSummary: data.caseSummary || ''
+                    });
+                }
             } else {
                 toast({ variant: 'destructive', title: 'Fehler', description: 'Mandant nicht gefunden.' });
             }
@@ -101,6 +108,7 @@ import { Skeleton } from '@/components/ui/skeleton';
       const docsQuery = query(
         collection(db, 'documents'),
         where('clientId', '==', id),
+        where('userId', '==', user.uid), // Ensure user can only query their own documents
         orderBy('createdAt', 'desc')
       );
       const unsubscribe = onSnapshot(docsQuery, (querySnapshot) => {
@@ -116,11 +124,15 @@ import { Skeleton } from '@/components/ui/skeleton';
         });
         setDocuments(docsData);
         setIsLoadingDocuments(false);
+      }, (error) => {
+        console.error("Error fetching documents: ", error);
+        toast({ variant: 'destructive', title: 'Fehler', description: 'Dokumente konnten nicht geladen werden.' });
+        setIsLoadingDocuments(false);
       });
 
       return () => unsubscribe();
 
-    }, [id, user]);
+    }, [id, user, toast]);
 
 
     const handleSaveDocument = async (docToSave: { title: string; content: string; notes: string; }) => {
@@ -219,7 +231,7 @@ import { Skeleton } from '@/components/ui/skeleton';
     if (!client) {
         return (
             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-                <p>Mandant konnte nicht geladen werden.</p>
+                <p>Mandant konnte nicht geladen werden oder Sie haben keine Zugriffsberechtigung.</p>
             </div>
         );
     }
