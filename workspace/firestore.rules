@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check ownership
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Rules for the 'clients' collection
+    match /clients/{clientId} {
+      // Allow reading a list only if the query is filtered by the user's ID.
+      // Allow reading a single document if the user is the owner.
+      allow read: if (isOwner(request.auth.uid) && 'userId' in resource.data && resource.data.userId == request.auth.uid) ||
+                    (request.auth != null && request.query.limit <= 100 && request.query.filters.size() == 1 && request.query.filters[0].field.string_value == 'userId' && request.query.filters[0].value.string_value == request.auth.uid);
+
+
+      // Allow creating/updating/deleting only if the user is the owner.
+      allow write: if isOwner(request.resource.data.userId);
+    }
+
+    // Rules for the 'text_blocks' collection
+    match /text_blocks/{textBlockId} {
+      allow read, write: if isOwner(request.auth.uid);
+    }
+
+    // Rules for the 'doc_templates' collection
+    match /doc_templates/{docTemplateId} {
+       allow read, write: if isOwner(request.auth.uid);
+    }
+  }
+}
