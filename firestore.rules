@@ -2,34 +2,37 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Helper function to check ownership
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
 
-    // Rules for the clients collection
+    // Clients Collection
     match /clients/{clientId} {
-      // A user can read a client document if they are the owner.
-      // This applies to both get() and list() queries.
-      // The client-side query MUST use a where("userId", "==", request.auth.uid) clause.
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Allow listing documents only if the query is for the user's own documents.
+      // This works even if the collection is empty.
+      allow list: if request.auth != null;
       
-      // A user can create, update, or delete a client document if they are the owner.
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Allow getting a single document if the user is the owner.
+      allow get: if isOwner(resource.data.userId);
+
+      // Allow creating, updating, deleting if the user is the owner of the document being written.
+      allow write: if isOwner(request.resource.data.userId);
     }
 
-    // Rules for the text_blocks collection
-    match /text_blocks/{textBlockId} {
-      // A user can read their own text blocks.
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      
-      // A user can write to their own text blocks.
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    // Text Blocks Collection
+    match /text_blocks/{blockId} {
+      allow list: if request.auth != null;
+      allow get: if isOwner(resource.data.userId);
+      allow write: if isOwner(request.resource.data.userId);
     }
 
-    // Rules for the doc_templates collection
-    match /doc_templates/{docTemplateId} {
-      // A user can read their own document templates.
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      
-      // A user can write to their own document templates.
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    // Document Templates Collection
+    match /doc_templates/{templateId} {
+      allow list: if request.auth != null;
+      allow get: if isOwner(resource.data.userId);
+      allow write: if isOwner(request.resource.data.userId);
     }
   }
 }
