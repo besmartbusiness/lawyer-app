@@ -52,7 +52,7 @@ export function AddClientDialog({ onClientAdded }: AddClientDialogProps) {
 
   async function onSubmit(values: ClientFormValues) {
     if (!user) {
-      toast({ variant: 'destructive', title: 'Fehler', description: 'Sie müssen angemeldet sein.' });
+      toast({ variant: 'destructive', title: 'Fehler', description: 'Sie müssen angemeldet sein, um einen Mandanten hinzuzufügen.' });
       return;
     }
     setIsSaving(true);
@@ -66,12 +66,12 @@ export function AddClientDialog({ onClientAdded }: AddClientDialogProps) {
         title: 'Erfolg',
         description: `Mandant "${values.name}" wurde erfolgreich hinzugefügt.`,
       });
-      onClientAdded({ id: docRef.id, ...values });
+      onClientAdded({ id: docRef.id, ...values, userId: user.uid });
       form.reset();
       setOpen(false);
     } catch (error) {
       console.error('Error adding client:', error);
-      toast({ variant: 'destructive', title: 'Fehler', description: 'Mandant konnte nicht hinzugefügt werden.' });
+      toast({ variant: 'destructive', title: 'Fehler', description: 'Mandant konnte nicht hinzugefügt werden. Prüfen Sie die Berechtigungen.' });
     } finally {
       setIsSaving(false);
     }

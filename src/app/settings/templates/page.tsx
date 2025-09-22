@@ -14,6 +14,9 @@ import { Loader2, PlusCircle, Trash2, Edit, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+// Extend the TextBlock type locally to handle the editing state
+type EditableTextBlock = TextBlock & { entryType?: 'text_block' | 'doc_template' };
+
 export default function TemplatesPage() {
   const { user, loading: authLoading } = useAuth();
   const [textBlocks, setTextBlocks] = useState<TextBlock[]>([]);
@@ -24,7 +27,7 @@ export default function TemplatesPage() {
   const [newEntryName, setNewEntryName] = useState('');
   const [newEntryContent, setNewEntryContent] = useState('');
   
-  const [editingEntry, setEditingEntry] = useState<TextBlock | null>(null);
+  const [editingEntry, setEditingEntry] = useState<EditableTextBlock | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -102,10 +105,9 @@ export default function TemplatesPage() {
   const handleUpdateEntry = async () => {
     if (!editingEntry || !editingEntry.name.trim() || !editingEntry.content.trim()) return;
     
-    // We need to know if it's a text_block or doc_template. We can store this in the editing state.
-    const type = (editingEntry as any).type as 'text_block' | 'doc_template';
+    const type = editingEntry.entryType;
     if (!type) {
-        toast({ variant: 'destructive', title: 'Fehler', description: 'Typ der Vorlage konnte nicht bestimmt werden.' });
+        toast({ variant: 'destructive', title: 'Interner Fehler', description: 'Typ der Vorlage konnte nicht bestimmt werden.' });
         return;
     }
 
@@ -115,12 +117,13 @@ export default function TemplatesPage() {
     const entryTypeName = type === 'text_block' ? 'Textbaustein' : 'Dokumentvorlage';
     
     try {
+        const { entryType, ...entryToSave } = editingEntry;
         const templateRef = doc(db, collectionName, editingEntry.id);
         await updateDoc(templateRef, {
-            name: editingEntry.name,
-            content: editingEntry.content,
+            name: entryToSave.name,
+            content: entryToSave.content,
         });
-        stateSetter(prev => prev.map(t => t.id === editingEntry.id ? editingEntry : t).sort((a,b) => a.name.localeCompare(b.name)));
+        stateSetter(prev => prev.map(t => t.id === entryToSave.id ? entryToSave : t).sort((a,b) => a.name.localeCompare(b.name)));
         setEditingEntry(null);
         toast({ title: 'Erfolg', description: `${entryTypeName} wurde aktualisiert.` });
     } catch (error) {
@@ -132,7 +135,7 @@ export default function TemplatesPage() {
   }
 
   const startEditing = (entry: TextBlock, type: 'text_block' | 'doc_template') => {
-    setEditingEntry({ ...entry, type } as any);
+    setEditingEntry({ ...entry, entryType: type });
   }
 
   if (authLoading) {
@@ -144,7 +147,7 @@ export default function TemplatesPage() {
       {isLoading ? (
          <Loader2 className="animate-spin" />
       ) : entries.length === 0 ? (
-        <p>Sie haben noch keine Einträge erstellt.</p>
+        <p className="text-muted-foreground text-sm text-center py-4">Sie haben noch keine Einträge erstellt.</p>
       ) : (
         entries.map(entry => (
           <Card key={entry.id} className="overflow-hidden">
