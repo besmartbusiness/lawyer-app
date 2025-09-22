@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, where } from 'firebase/firestore';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,10 +25,20 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+        // If there's no user, we can stop loading and show an empty state.
+        // The auth hook will redirect to login anyway.
+        setLoading(false);
+        return;
+    }
 
     setLoading(true);
-    const q = query(collection(db, 'clients'), orderBy('createdAt', 'desc'));
+    // Corrected query: only fetch clients where userId matches the logged-in user's UID
+    const q = query(
+        collection(db, 'clients'), 
+        where("userId", "==", user.uid), 
+        orderBy('createdAt', 'desc')
+    );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const clientsData: Client[] = [];
