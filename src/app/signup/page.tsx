@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,6 +18,8 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 
 const signupSchema = z.object({
@@ -44,9 +47,21 @@ export default function SignupPage() {
         try {
             const auth = getAuth();
             const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-            await updateProfile(userCredential.user, {
+            const user = userCredential.user;
+
+            // Update Firebase Auth profile
+            await updateProfile(user, {
                 displayName: values.name
             });
+            
+            // Create user document in Firestore
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                displayName: values.name,
+                email: values.email,
+                createdAt: serverTimestamp(),
+            });
+
             router.push('/dashboard');
         } catch (error: any) {
             toast({
