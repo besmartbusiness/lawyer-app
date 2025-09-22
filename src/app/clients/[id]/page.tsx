@@ -32,6 +32,7 @@ import { Loader2, Save } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 
 
   // Define the type for a document
@@ -98,6 +99,10 @@ import { Skeleton } from '@/components/ui/skeleton';
             } else {
                 toast({ variant: 'destructive', title: 'Fehler', description: 'Mandant nicht gefunden.' });
             }
+            setIsLoadingClient(false);
+        }, (error) => {
+            console.error("Error fetching client: ", error);
+            toast({ variant: 'destructive', title: 'Fehler', description: 'Mandant konnte nicht geladen werden.' });
             setIsLoadingClient(false);
         });
         return () => unsubscribe();
@@ -244,7 +249,7 @@ import { Skeleton } from '@/components/ui/skeleton';
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight font-headline break-words">
                 Fall: {client.name}
             </h2>
-            <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber}</p>
+            <p className="text-muted-foreground">Aktenzeichen: {client.caseInfo.caseNumber || 'N/A'}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="h-auto grid grid-cols-1 md:inline-flex md:flex-wrap md:justify-start">
@@ -310,15 +315,14 @@ import { Skeleton } from '@/components/ui/skeleton';
                             <Textarea id="defendant" value={client.caseInfo.defendant} onChange={e => handleMasterDataChange('defendant', e.target.value)} placeholder="Name und Adresse des Beklagten" className='min-h-[100px]'/>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="court">Gericht / AZ</Label>
-                            <Textarea id="court" value={client.caseInfo.court + (client.caseInfo.caseNumber ? ', ' + client.caseInfo.caseNumber : '')} 
-                            onChange={e => {
-                                const parts = e.target.value.split(',');
-                                handleMasterDataChange('court', parts[0] || '');
-                                handleMasterDataChange('caseNumber', parts.slice(1).join(',').trim());
-                            }} placeholder="Gericht, Aktenzeichen" />
+                            <Label htmlFor="court">Gericht</Label>
+                            <Input id="court" value={client.caseInfo.court} onChange={e => handleMasterDataChange('court', e.target.value)} placeholder="Zuständiges Gericht"/>
                         </div>
                          <div className="space-y-2">
+                            <Label htmlFor="caseNumber">Aktenzeichen</Label>
+                            <Input id="caseNumber" value={client.caseInfo.caseNumber} onChange={e => handleMasterDataChange('caseNumber', e.target.value)} placeholder="Aktenzeichen des Falls"/>
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="caseSummary">Zusammenfassung</Label>
                             <Textarea id="caseSummary" value={client.caseSummary} onChange={e => handleMasterDataChange('caseSummary', e.target.value)} placeholder="Kurze Zusammenfassung des Falls..." className='min-h-[100px]'/>
                         </div>
@@ -358,3 +362,5 @@ import { Skeleton } from '@/components/ui/skeleton';
       </div>
     );
   }
+
+    
