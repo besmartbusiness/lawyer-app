@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot, orderBy, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, onSnapshot, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -150,6 +150,7 @@ type Client = {
   name: string;
   email: string;
   phone: string;
+  createdAt: { toDate: () => Date };
 };
 
 export default function ClientsPage() {
@@ -170,8 +171,7 @@ export default function ClientsPage() {
     setLoading(true);
     const q = query(
         collection(db, 'clients'), 
-        where("userId", "==", user.uid), 
-        orderBy('createdAt', 'desc')
+        where("userId", "==", user.uid)
     );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -179,6 +179,8 @@ export default function ClientsPage() {
       querySnapshot.forEach((doc) => {
         clientsData.push({ id: doc.id, ...doc.data() } as Client);
       });
+      // Sort on client side
+      clientsData.sort((a,b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime());
       setClients(clientsData);
       setLoading(false);
     }, (error) => {

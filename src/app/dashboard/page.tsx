@@ -3,12 +3,12 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, limit } from 'firebase/firestore';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, FileText, PlusCircle, Loader2 } from "lucide-react";
+import { Users, FileText, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -34,6 +34,8 @@ export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [clientCount, setClientCount] = useState(0);
+  const [documentCount, setDocumentCount] = useState(0);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -47,52 +49,37 @@ export default function DashboardPage() {
     // Listener for clients
     const clientsQuery = query(
       collection(db, 'clients'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc'),
-      limit(5)
+      where('userId', '==', user.uid)
     );
     const unsubscribeClients = onSnapshot(clientsQuery, (snapshot) => {
-      const recentClients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
-      setClients(recentClients);
+      const allClients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+      allClients.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime());
+      setClients(allClients.slice(0, 5));
     });
 
-    // Listener for all clients count (more efficient for just counting)
+    // Listener for all clients count
     const allClientsQuery = query(collection(db, 'clients'), where('userId', '==', user.uid));
     const unsubscribeAllClients = onSnapshot(allClientsQuery, (snapshot) => {
-        // This is a bit inefficient as it fetches all docs just to count.
-        // For larger scales, a counter in a separate doc would be better.
-        // But for this app's scale, it's acceptable.
-        setClients(prev => {
-            // A bit of a hack to update the total count without a separate state
-            // We just need the number, so we can store it on the array object itself.
-            (snapshot as any).totalCount = snapshot.size;
-            return [...prev]; // trigger re-render
-        })
+        setClientCount(snapshot.size);
     });
-
 
     // Listener for documents
     const documentsQuery = query(
       collection(db, 'documents'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc'),
-      limit(5)
+      where('userId', '==', user.uid)
     );
     const unsubscribeDocuments = onSnapshot(documentsQuery, (snapshot) => {
-      const recentDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Document));
-      setDocuments(recentDocs);
+      const allDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Document));
+      allDocs.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime());
+      setDocuments(allDocs.slice(0, 5));
       setLoadingData(false); // Stop loading once we have some data
     });
 
      // Listener for all documents count
      const allDocumentsQuery = query(collection(db, 'documents'), where('userId', '==', user.uid));
      const unsubscribeAllDocuments = onSnapshot(allDocumentsQuery, (snapshot) => {
-         setDocuments(prev => {
-            (snapshot as any).totalCount = snapshot.size;
-             return [...prev];
-         })
+         setDocumentCount(snapshot.size);
      });
-
 
     return () => {
       unsubscribeClients();
@@ -104,9 +91,6 @@ export default function DashboardPage() {
   }, [user, authLoading]);
 
   const isLoading = authLoading || loadingData;
-  const clientCount = (clients as any).totalCount ?? 0;
-  const documentCount = (documents as any).totalCount ?? 0;
-
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -172,7 +156,7 @@ export default function DashboardPage() {
                     </TableRow>
                   ))
                 ) : clients.length > 0 ? (
-                  clients.slice(0, 5).map((client) => (
+                  clients.map((client) => (
                     <TableRow key={client.id}>
                       <TableCell className="font-medium">
                          <Link href={`/clients/${client.id}`} className="hover:underline">{client.name}</Link>
@@ -212,7 +196,7 @@ export default function DashboardPage() {
                         </TableRow>
                     ))
                 ) : documents.length > 0 ? (
-                  documents.slice(0, 5).map((doc) => (
+                  documents.map((doc) => (
                     <TableRow key={doc.id}>
                       <TableCell className="font-medium">
                          <Link href={`/clients/${doc.clientId}?tab=generator&docId=${doc.id}`} className="hover:underline">{doc.title}</Link>
