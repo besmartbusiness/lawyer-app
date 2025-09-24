@@ -30,14 +30,11 @@ export default function ClientsPage() {
         return;
     }
     if (!user) {
-        // If there's no user, we can stop loading and show an empty state.
-        // The auth hook will redirect to login anyway.
         setLoading(false);
         return;
     }
 
     setLoading(true);
-    // Corrected query: only fetch clients where userId matches the logged-in user's UID
     const q = query(
         collection(db, 'clients'), 
         where("userId", "==", user.uid), 
