@@ -9,8 +9,10 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {googleAI} from '@genkit-ai/googleai';
-import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
+import { z } from 'zod';
+import { vertexAI } from '@genkit-ai/vertexai';
+
 
 const PredictiveAnalysisInputSchema = z.object({
   courtLocation: z.string().describe('Der Gerichtsort, an dem der Fall verhandelt wird (z.B. "OLG München", "AG Mannheim").'),
@@ -48,24 +50,23 @@ export async function predictiveAnalysis(input: PredictiveAnalysisInput): Promis
 
 const prompt = ai.definePrompt({
   name: 'predictiveAnalysisPrompt',
-  input: {schema: PredictiveAnalysisInputSchema},
-  output: {schema: PredictiveAnalysisOutputSchema},
-  tools: [googleAI.googleSearch],
+  input: { schema: PredictiveAnalysisInputSchema },
+  output: { schema: PredictiveAnalysisOutputSchema },
   prompt: `Sie sind ein hochspezialisiertes KI-Modell für prädiktive juristische Analysen in Deutschland. Ihre Aufgabe ist es, eine datengestützte, realistische Einschätzung der Erfolgschancen eines Falles zu geben. Nutzen Sie dafür zwingend das 'googleSearch' Tool, um das Internet nach echten, vergleichbaren Fällen, Urteilen und Fachartikeln zu durchsuchen.
 
 **Anweisungen:**
 1.  **Analysieren Sie den Input:** Nehmen Sie Gerichtsort, Rechtsgebiet, Kernargument und die Fallzusammenfassung.
-2.  **Führen Sie eine Websuche durch:** Nutzen Sie das 'googleSearch' Tool, um nach passenden, anonymisierten Urteilen und juristischen Analysen in deutschen Datenbanken (z.B. JURIS, Beck-Online, OpenJur) zu suchen. Suchen Sie nach Mustern bei dem angegebenen Gericht oder in dem Rechtsgebiet.
+2.  **Führen Sie eine Websuche durch, um nach passenden, anonymisierten Urteilen und juristischen Analysen in deutschen Datenbanken (z.B. JURIS, Beck-Online, OpenJur) zu suchen. Suchen Sie nach Mustern bei dem angegebenen Gericht oder in dem Rechtsgebiet.
 3.  **Argumenten-Stärke:** Bewerten Sie das Kernargument basierend auf den Recherche-Ergebnissen. Leiten Sie eine geschätzte, prozentuale Erfolgsquote für ähnliche Fälle ab. Begründen Sie die Quote kurz und nennen Sie Aktenzeichen oder Quellen als Beleg.
 4.  **Richter-Analyse:** Suchen Sie nach Informationen über die Entscheidungspraxis des spezifischen Gerichts oder, falls möglich, einzelner Richter in diesem Rechtsgebiet. Fassen Sie die Tendenzen zusammen.
 5.  **Gesamtprognose:** Erstellen Sie eine prozentuale Gesamterfolgsaussicht. Leiten Sie diese logisch aus den Stärken und Schwächen des Falles ab, wie sie sich aus den Recherche-Ergebnissen ergeben. Geben Sie eine klare strategische Empfehlung.
 6.  **Tonfall:** Seien Sie professionell, objektiv und datenorientiert. Formulieren Sie so, als würden Sie auf eine riesige Datenbank von echten Fällen zugreifen, die Sie gerade durchsucht haben.
 
 **Zu analysierender Fall:**
-*   Gerichtsort: {{{courtLocation}}}
-*   Rechtsgebiet: {{{legalArea}}}
-*   Kernargument: {{{coreArgument}}}
-*   Zusammenfassung: {{{caseSummary}}}
+* Gerichtsort: {{{courtLocation}}}
+* Rechtsgebiet: {{{legalArea}}}
+* Kernargument: {{{coreArgument}}}
+* Zusammenfassung: {{{caseSummary}}}
 `,
 });
 
@@ -77,7 +78,10 @@ const predictiveAnalysisFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const { output } = await prompt(input);
+      const { output } = await prompt(input, {
+        model: googleAI.model('gemini-1.5-pro'),
+        tools: [googleAI.googleSearch],
+      });
 
       if (!output) {
         throw new Error("Keine Ausgabe vom KI-Modell erhalten.");
@@ -86,7 +90,7 @@ const predictiveAnalysisFlow = ai.defineFlow(
       return output;
 
     } catch (e: any) {
-      console.error("Fehler bei der Ausführung des Prompts:", e);
+      console.error("Fehler bei der Ausführung des Flows 'predictiveAnalysisFlow':", e);
       throw new Error(`Die prädiktive Analyse konnte nicht generiert werden: ${e.message}`);
     }
   }
