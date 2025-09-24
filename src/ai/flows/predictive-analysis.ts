@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   name: 'predictiveAnalysisPrompt',
   input: { schema: PredictiveAnalysisInputSchema },
   output: { schema: PredictiveAnalysisOutputSchema },
-  model: vertexAI.model('gemini-1.5-pro'),
+  model: vertexAI.model('gemini-2.5-pro'),
   prompt: `Sie sind ein hochspezialisiertes KI-Modell für prädiktive juristische Analysen in Deutschland. Ihre Aufgabe ist es, eine datengestützte, realistische Einschätzung der Erfolgschancen eines Falles zu geben. Nutzen Sie dafür zwingend das 'googleSearch' Tool, um das Internet nach echten, vergleichbaren Fällen, Urteilen und Fachartikeln zu durchsuchen.
 
 **Anweisungen:**
