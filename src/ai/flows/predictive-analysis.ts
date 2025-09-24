@@ -56,7 +56,7 @@ const prompt = ai.definePrompt({
 
 **Anweisungen:**
 1.  **Analysieren Sie den Input:** Nehmen Sie Gerichtsort, Rechtsgebiet, Kernargument und die Fallzusammenfassung.
-2.  **Führen Sie eine Websuche durch:** Suchen Sie nach passenden, anonymisierten Urteilen und juristischen Analysen. Suchen Sie nach Mustern bei dem angegebenen Gericht oder in dem Rechtsgebiet.
+2.  **Führen Sie eine Websuche durch:** Suchen Sie nach passenden Urteilen und juristischen Analysen. Suchen Sie nach Mustern bei dem angegebenen Gericht oder in dem Rechtsgebiet.
 3.  **Argumenten-Stärke:** Bewerten Sie das Kernargument basierend auf den Recherche-Ergebnissen. Leiten Sie eine geschätzte, prozentuale Erfolgsquote für ähnliche Fälle ab. Begründen Sie die Quote kurz und nennen Sie Aktenzeichen oder Quellen als Beleg.
 4.  **Richter-Analyse:** Suchen Sie nach Informationen über die Entscheidungspraxis des spezifischen Gerichts oder, falls möglich, einzelner Richter in diesem Rechtsgebiet. Fassen Sie die Tendenzen zusammen.
 5.  **Gesamtprognose:** Erstellen Sie eine prozentuale Gesamterfolgsaussicht. Leiten Sie diese logisch aus den Stärken und Schwächen des Falles ab, wie sie sich aus den Recherche-Ergebnissen ergeben. Geben Sie eine klare strategische Empfehlung.
