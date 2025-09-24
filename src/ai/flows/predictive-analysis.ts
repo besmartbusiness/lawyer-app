@@ -75,8 +75,19 @@ const predictiveAnalysisFlow = ai.defineFlow(
     inputSchema: PredictiveAnalysisInputSchema,
     outputSchema: PredictiveAnalysisOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    try {
+      const { output } = await prompt(input);
+
+      if (!output) {
+        throw new Error("Keine Ausgabe vom KI-Modell erhalten.");
+      }
+
+      return output;
+
+    } catch (e: any) {
+      console.error("Fehler bei der Ausführung des Prompts:", e);
+      throw new Error(`Die prädiktive Analyse konnte nicht generiert werden: ${e.message}`);
+    }
   }
 );
