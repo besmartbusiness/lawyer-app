@@ -11,6 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
+import { vertexAI } from '@genkit-ai/vertexai';
 
 
 const PredictiveAnalysisInputSchema = z.object({
@@ -78,7 +79,7 @@ const predictiveAnalysisFlow = ai.defineFlow(
   async (input) => {
     try {
       const { output } = await ai.generate({
-        model: googleAI.model('gemini-1.5-pro'),
+        model: vertexAI.model('gemini-2.5-pro'),
         prompt: prompt.prompt,
         input: input,
         output: {
