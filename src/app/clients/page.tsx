@@ -27,7 +27,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, PlusCircle } from 'lucide-react';
 
-// --- AddClientDialog Component ---
 const clientSchema = z.object({
   name: z.string().min(2, { message: 'Der Name muss mindestens 2 Zeichen lang sein.' }),
   email: z.string().email({ message: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' }),
