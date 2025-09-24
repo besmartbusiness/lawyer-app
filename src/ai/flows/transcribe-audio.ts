@@ -10,6 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { vertexAI } from '@genkit-ai/vertexai';
 
 const TranscribeAudioInputSchema = z.object({
   audioDataUri: z
@@ -37,7 +38,7 @@ const transcribeAudioFlow = ai.defineFlow(
     },
     async (input) => {
         const {text} = await ai.generate({
-            model: 'googleai/gemini-2.5-flash',
+            model: vertexAI.model('googleai/gemini-2.5-flash'),
             prompt: [
               {
                 text: 'Transkribieren Sie die folgende Audiodatei auf Deutsch. Konzentrieren Sie sich nur auf den gesprochenen Text und lassen Sie alle Füllwörter oder Geräusche weg.',

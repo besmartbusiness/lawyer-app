@@ -12,6 +12,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { getTextBlocksTool } from './get-text-blocks';
 import { getDocumentTemplateTool } from './get-document-templates';
+import vertexAI from '@genkit-ai/vertexai';
 
 const GenerateLegalDocumentInputSchema = z.object({
   notes: z.string().describe('Die Fallnotizen, entweder aus einer Sprachaufnahme oder einer Texteingabe. Diese enthalten die Stammdaten des Falls (Parteien, Gericht, Aktenzeichen) und die inhaltlichen Anweisungen.'),
@@ -30,6 +31,7 @@ export async function generateLegalDocument(input: GenerateLegalDocumentInput): 
 
 const generateLegalDocumentPrompt = ai.definePrompt({
   name: 'generateLegalDocumentPrompt',
+  model: vertexAI.model('gemini-2.5-pro'),
   input: {schema: GenerateLegalDocumentInputSchema},
   output: {schema: GenerateLegalDocumentOutputSchema},
   tools: [getTextBlocksTool, getDocumentTemplateTool],

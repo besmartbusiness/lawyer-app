@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { vertexAI } from '@genkit-ai/vertexai';
 
 const SummarizeClientNotesInputSchema = z.object({
   notes: z
@@ -29,6 +30,7 @@ export async function summarizeClientNotes(input: SummarizeClientNotesInput): Pr
 
 const prompt = ai.definePrompt({
   name: 'summarizeClientNotesPrompt',
+  model: vertexAI.model('gemini-2.5-pro'),
   input: {schema: SummarizeClientNotesInputSchema},
   output: {schema: SummarizeClientNotesOutputSchema},
   prompt: `Sie sind ein erfahrener juristischer Assistent in einer deutschen Anwaltskanzlei. Fassen Sie die folgenden Mandantennotizen prägnant, strukturiert und verständlich auf Deutsch zusammen:\n\nNotizen: {{{notes}}}`,

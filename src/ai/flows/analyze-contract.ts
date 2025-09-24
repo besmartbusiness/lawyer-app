@@ -9,6 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import vertexAI from '@genkit-ai/vertexai';
 import {z} from 'genkit';
 
 const AnalyzeContractInputSchema = z.object({
@@ -37,6 +38,7 @@ export async function analyzeContract(input: AnalyzeContractInput): Promise<Anal
 
 const prompt = ai.definePrompt({
   name: 'analyzeContractPrompt',
+  model: vertexAI.model('gemini-2.5-pro'),
   input: {schema: AnalyzeContractInputSchema},
   output: {schema: AnalyzeContractOutputSchema},
   prompt: `Sie sind ein hochspezialisierter KI-Anwalt für deutsches Wirtschafts- und Vertragsrecht. Ihre Aufgabe ist es, einen Vertragsentwurf zu prüfen und als "interaktiver Verhandlungs-Copilot" zu agieren. Sie wurden auf zehntausenden von Verträgen und Marktdaten trainiert.

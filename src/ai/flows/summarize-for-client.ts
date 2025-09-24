@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { vertexAI } from '@genkit-ai/vertexai';
 
 const SummarizeForClientInputSchema = z.object({
   documentContent: z.string().describe('Der juristische Dokumenteninhalt, der für einen Mandanten vereinfacht werden soll.'),
@@ -27,6 +28,7 @@ export async function summarizeForClient(input: SummarizeForClientInput): Promis
 
 const prompt = ai.definePrompt({
   name: 'summarizeForClientPrompt',
+  model: vertexAI.model('gemini-2.5-flash'),
   input: {schema: SummarizeForClientInputSchema},
   output: {schema: SummarizeForClientOutputSchema},
   prompt: `Sie sind ein erfahrener Anwalt, der einem Mandanten einen komplexen juristischen Sachverhalt erklären muss. Ihre Aufgabe ist es, das folgende Dokument zu analysieren und dessen Inhalt in eine einfache, klare und leicht verständliche Sprache zu "übersetzen".
