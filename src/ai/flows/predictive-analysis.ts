@@ -11,6 +11,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { vertexAI } from '@genkit-ai/vertexai';
+import { googleAI } from '@genkit-ai/googleai';
+
 
 const PredictiveAnalysisInputSchema = z.object({
   courtLocation: z.string().describe('Der Gerichtsort, an dem der Fall verhandelt wird (z.B. "OLG München", "AG Mannheim").'),
@@ -48,7 +50,6 @@ export async function predictiveAnalysis(input: PredictiveAnalysisInput): Promis
 
 const prompt = ai.definePrompt({
   name: 'predictiveAnalysisPrompt',
-  model: vertexAI.model('gemini-2.5-pro'),
   input: { schema: PredictiveAnalysisInputSchema },
   output: { schema: PredictiveAnalysisOutputSchema },
   prompt: `Sie sind ein hochspezialisiertes KI-Modell für prädiktive juristische Analysen in Deutschland. Ihre Aufgabe ist es, eine datengestützte, realistische Einschätzung der Erfolgschancen eines Falles zu geben. Nutzen Sie dafür zwingend das 'googleSearch' Tool, um das Internet nach echten, vergleichbaren Fällen, Urteilen und Fachartikeln zu durchsuchen.
@@ -77,13 +78,22 @@ const predictiveAnalysisFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const result = await prompt(input);
+      const { output } = await ai.generate({
+        model: googleAI.model('gemini-1.5-pro'),
+        prompt: prompt.prompt,
+        input: input,
+        output: {
+          format: 'json',
+          schema: PredictiveAnalysisOutputSchema,
+        },
+        tools: [googleAI.googleSearch],
+      });
 
-      if (!result) {
+      if (!output) {
         throw new Error("Keine Ausgabe vom KI-Modell erhalten.");
       }
 
-      return result;
+      return output;
 
     } catch (e: any) {
       console.error("Fehler bei der Ausführung des Flows 'predictiveAnalysisFlow':", e);
