@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {googleSearch} from '@genkit-ai/googleai';
+import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'genkit';
 
 const PredictiveAnalysisInputSchema = z.object({
@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   name: 'predictiveAnalysisPrompt',
   input: {schema: PredictiveAnalysisInputSchema},
   output: {schema: PredictiveAnalysisOutputSchema},
-  tools: [googleSearch],
+  tools: [googleAI.googleSearch],
   prompt: `Sie sind ein hochspezialisiertes KI-Modell für prädiktive juristische Analysen in Deutschland. Ihre Aufgabe ist es, eine datengestützte, realistische Einschätzung der Erfolgschancen eines Falles zu geben. Nutzen Sie dafür zwingend das 'googleSearch' Tool, um das Internet nach echten, vergleichbaren Fällen, Urteilen und Fachartikeln zu durchsuchen.
 
 **Anweisungen:**
