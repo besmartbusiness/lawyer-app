@@ -10,7 +10,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { vertexAI } from '@genkit-ai/vertexai';
 import { googleAI } from '@genkit-ai/googleai';
 
 
