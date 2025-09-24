@@ -50,14 +50,13 @@ export async function predictiveAnalysis(input: PredictiveAnalysisInput): Promis
 const prompt = ai.definePrompt({
   name: 'predictiveAnalysisPrompt',
   model: vertexAI.model('gemini-2.5-pro'),
-  tools: [vertexAI.googleSearch],
   input: { schema: PredictiveAnalysisInputSchema },
   output: { schema: PredictiveAnalysisOutputSchema },
-  prompt: `Sie sind ein hochspezialisiertes KI-Modell für prädiktive juristische Analysen in Deutschland. Ihre Aufgabe ist es, eine datengestützte, realistische Einschätzung der Erfolgschancen eines Falles zu geben. Nutzen Sie dafür zwingend das 'googleSearch' Tool, um das Internet nach echten, vergleichbaren Fällen, Urteilen und Fachartikeln zu durchsuchen.
+  prompt: `Sie sind ein hochspezialisiertes KI-Modell für prädiktive juristische Analysen in Deutschland. Ihre Aufgabe ist es, eine datengestützte, realistische Einschätzung der Erfolgschancen eines Falles zu geben. Nutzen Sie dafür Ihre integrierte Websuche, um das Internet nach echten, vergleichbaren Fällen, Urteilen und Fachartikeln in deutschen juristischen Datenbanken (z.B. JURIS, Beck-Online, OpenJur) zu durchsuchen.
 
 **Anweisungen:**
 1.  **Analysieren Sie den Input:** Nehmen Sie Gerichtsort, Rechtsgebiet, Kernargument und die Fallzusammenfassung.
-2.  **Führen Sie eine Websuche durch, um nach passenden, anonymisierten Urteilen und juristischen Analysen in deutschen Datenbanken (z.B. JURIS, Beck-Online, OpenJur) zu suchen. Suchen Sie nach Mustern bei dem angegebenen Gericht oder in dem Rechtsgebiet.
+2.  **Führen Sie eine Websuche durch:** Suchen Sie nach passenden, anonymisierten Urteilen und juristischen Analysen. Suchen Sie nach Mustern bei dem angegebenen Gericht oder in dem Rechtsgebiet.
 3.  **Argumenten-Stärke:** Bewerten Sie das Kernargument basierend auf den Recherche-Ergebnissen. Leiten Sie eine geschätzte, prozentuale Erfolgsquote für ähnliche Fälle ab. Begründen Sie die Quote kurz und nennen Sie Aktenzeichen oder Quellen als Beleg.
 4.  **Richter-Analyse:** Suchen Sie nach Informationen über die Entscheidungspraxis des spezifischen Gerichts oder, falls möglich, einzelner Richter in diesem Rechtsgebiet. Fassen Sie die Tendenzen zusammen.
 5.  **Gesamtprognose:** Erstellen Sie eine prozentuale Gesamterfolgsaussicht. Leiten Sie diese logisch aus den Stärken und Schwächen des Falles ab, wie sie sich aus den Recherche-Ergebnissen ergeben. Geben Sie eine klare strategische Empfehlung.
