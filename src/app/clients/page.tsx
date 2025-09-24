@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AddClientDialog } from './add-client-dialog';
+import { AddClientDialog } from '@/app/clients/add-client-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Client = {
