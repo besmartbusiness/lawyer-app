@@ -32,9 +32,9 @@ export function CookieBanner() {
     const [showBanner, setShowBanner] = useState(false);
 
     useEffect(() => {
-        // Check if the cookie consent has been given
+        // Only show the banner if the consent cookie has not been set yet
         const consent = getCookie('cookie_consent');
-        if (consent !== 'true') {
+        if (consent === null) {
             setShowBanner(true);
         }
     }, []);
@@ -45,8 +45,6 @@ export function CookieBanner() {
     };
     
     const handleDecline = () => {
-        // You can decide what to do here. Maybe set a 'false' cookie 
-        // or just hide the banner for the session.
         setCookie('cookie_consent', 'false', 365);
         setShowBanner(false);
     }
@@ -78,3 +76,4 @@ export function CookieBanner() {
         </div>
     );
 }
+
