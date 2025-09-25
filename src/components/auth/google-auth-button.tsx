@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -6,6 +7,9 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+
 
 export function GoogleAuthButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,7 +21,27 @@ export function GoogleAuthButton() {
     try {
       const auth = getAuth();
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if user document already exists
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        // This is a new user, create their document in Firestore with a trial
+        const trialEndDate = new Date();
+        trialEndDate.setDate(trialEndDate.getDate() + 14);
+
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          createdAt: serverTimestamp(),
+          trialEndDate: trialEndDate,
+        });
+      }
+
       router.push('/dashboard');
     } catch (error: any) {
         toast({

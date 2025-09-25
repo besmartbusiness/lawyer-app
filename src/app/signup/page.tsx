@@ -54,12 +54,17 @@ export default function SignupPage() {
                 displayName: values.name
             });
             
+            // Calculate trial end date (14 days from now)
+            const trialEndDate = new Date();
+            trialEndDate.setDate(trialEndDate.getDate() + 14);
+
             // Create user document in Firestore
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 displayName: values.name,
                 email: values.email,
                 createdAt: serverTimestamp(),
+                trialEndDate: trialEndDate,
             });
 
             router.push('/dashboard');
