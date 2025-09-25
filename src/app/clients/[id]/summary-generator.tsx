@@ -10,6 +10,9 @@ import { Loader2, BookText, Wand2, UploadCloud, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { summarizeText } from '@/ai/flows/summarize-text';
 import { Input } from '@/components/ui/input';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { storage } from '@/lib/firebase';
 
 type SummaryGeneratorProps = {
     onSave: (doc: { title: string; content: string; notes: string }) => void;
@@ -22,24 +25,16 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
   const [summaryTitle, setSummaryTitle] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [fileName, setFileName] = useState('');
+  const [file, setFile] = useState<File | null>(null);
   const [pdfDataUri, setPdfDataUri] = useState('');
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const fileToDataUri = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-  };
+  const { user } = useAuth();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      if (selectedFile.type !== 'application/pdf') {
         toast({
             variant: 'destructive',
             title: 'Falscher Dateityp',
@@ -47,21 +42,14 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
         });
         return;
       }
-      setFileName(file.name);
+      setFile(selectedFile);
       setTextToSummarize(''); // Clear text area if a file is selected
-      try {
-        const dataUri = await fileToDataUri(file);
-        setPdfDataUri(dataUri);
-      } catch (error) {
-        console.error("Error converting file to data URI:", error);
-        toast({ variant: 'destructive', title: 'Fehler bei Dateiverarbeitung', description: 'Die Datei konnte nicht gelesen werden.' });
-      }
     }
   };
 
 
   const handleSummarize = async () => {
-    if (!textToSummarize.trim() && !pdfDataUri) {
+    if (!textToSummarize.trim() && !file) {
       toast({
         variant: 'destructive',
         title: 'Eingabe erforderlich',
@@ -69,24 +57,40 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
       });
       return;
     }
+     if (!user) {
+        toast({ variant: 'destructive', title: 'Nicht angemeldet', description: 'Sie müssen angemeldet sein.' });
+        return;
+    }
 
     setIsSummarizing(true);
     setSummary('');
     setSummaryTitle('');
 
     try {
-      const result = await summarizeText({ 
-        textToSummarize: textToSummarize || undefined,
-        documentDataUri: pdfDataUri || undefined,
-       });
-      setSummary(result.summary);
-      setSummaryTitle(`Zusammenfassung für ${fileName || 'eingefügten Text'}`);
-    } catch (error) {
+        let documentUrl: string | undefined = undefined;
+
+        if (file) {
+             // 1. Upload file to Firebase Storage
+            toast({ title: 'Lade Dokument hoch...', description: 'Ihr Dokument wird sicher gespeichert.' });
+            const filePath = `uploads/${user.uid}/summaries/${Date.now()}_${file.name}`;
+            const fileStorageRef = storageRef(storage, filePath);
+            await uploadBytes(fileStorageRef, file);
+            documentUrl = await getDownloadURL(fileStorageRef);
+        }
+
+        toast({ title: 'Erstelle Zusammenfassung...', description: 'Die KI analysiert den Inhalt.' });
+        const result = await summarizeText({ 
+            textToSummarize: textToSummarize || undefined,
+            documentDataUri: documentUrl,
+        });
+        setSummary(result.summary);
+        setSummaryTitle(`Zusammenfassung für ${file?.name || 'eingefügten Text'}`);
+    } catch (error: any) {
       console.error('Summarization error:', error);
       toast({
         variant: 'destructive',
         title: 'Zusammenfassung fehlgeschlagen',
-        description: 'Bei der Analyse des Dokuments ist ein Fehler aufgetreten.',
+        description: error.message || 'Bei der Analyse des Dokuments ist ein Fehler aufgetreten.',
       });
     } finally {
       setIsSummarizing(false);
@@ -97,8 +101,7 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
     setTextToSummarize(e.target.value);
     if (e.target.value) {
         // If user types, clear the file selection
-        setPdfDataUri('');
-        setFileName('');
+        setFile(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -125,22 +128,21 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
     
     setIsSaving(true);
     // Use the original text/file name as "notes"
-    const notes = textToSummarize || `Zusammenfassung der Datei: ${fileName}`;
+    const notes = textToSummarize || `Zusammenfassung der Datei: ${file?.name || ''}`;
     onSave({ title: summaryTitle, content: summary, notes: notes });
 
     await new Promise(resolve => setTimeout(resolve, 500)); 
     
     toast({
         title: 'Zusammenfassung gespeichert',
-        description: `Das Dokument "${summaryTitle}" wurde erstellt. Sie finden es im Tab "KI-Dokumente".`,
+        description: `Das Dokument "${summaryTitle}" wurde erstellt. Sie finden es im Tab "Übersicht".`,
     });
     
     // Clear the form
     setTextToSummarize('');
     setSummary('');
     setSummaryTitle('');
-    setFileName('');
-    setPdfDataUri('');
+    setFile(null);
     if (fileInputRef.current) {
         fileInputRef.current.value = '';
     }
@@ -191,9 +193,9 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
                     <UploadCloud className="mr-2" /> PDF hochladen
                 </Button>
             </div>
-             {fileName && (
+             {file && (
                 <div className="text-sm text-muted-foreground pt-2">
-                    Ausgewählte Datei: <span className='font-medium'>{fileName}</span>
+                    Ausgewählte Datei: <span className='font-medium'>{file.name}</span>
                 </div>
             )}
           </div>
@@ -234,7 +236,7 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
               )}
               Zusammenfassung speichern
           </Button>
-          <Button onClick={handleSummarize} disabled={isBusy || (!textToSummarize.trim() && !pdfDataUri)} className='w-full sm:w-auto'>
+          <Button onClick={handleSummarize} disabled={isBusy || (!textToSummarize.trim() && !file)} className='w-full sm:w-auto'>
             {isSummarizing ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

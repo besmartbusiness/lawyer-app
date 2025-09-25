@@ -11,6 +11,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { analyzeContract, AnalyzeContractOutput } from '@/ai/flows/analyze-contract';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { storage } from '@/lib/firebase';
+
 
 export default function ContractAnalysisPage() {
     const [file, setFile] = useState<File | null>(null);
@@ -19,15 +23,8 @@ export default function ContractAnalysisPage() {
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
+    const { user } = useAuth();
 
-    const fileToDataUri = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
@@ -65,16 +62,29 @@ export default function ContractAnalysisPage() {
             });
             return;
         }
+         if (!user) {
+            toast({ variant: 'destructive', title: 'Nicht angemeldet', description: 'Sie müssen angemeldet sein.' });
+            return;
+        }
 
         setIsAnalyzing(true);
         setError(null);
         setAnalysisResult(null);
 
         try {
-            const documentDataUri = await fileToDataUri(file);
+            // 1. Upload file to Firebase Storage
+            toast({ title: 'Lade Vertrag hoch...', description: 'Ihr Dokument wird sicher gespeichert.' });
+            const filePath = `uploads/${user.uid}/contracts/${Date.now()}_${file.name}`;
+            const fileStorageRef = storageRef(storage, filePath);
+            await uploadBytes(fileStorageRef, file);
 
+            // 2. Get download URL
+            const downloadURL = await getDownloadURL(fileStorageRef);
+            
+            // 3. Call AI flow with the URL
+            toast({ title: 'Analysiere Vertrag...', description: 'Die KI prüft das Dokument.' });
             const result = await analyzeContract({
-                contractDocument: documentDataUri,
+                contractDocument: downloadURL,
             });
 
             setAnalysisResult(result);
@@ -89,7 +99,7 @@ export default function ContractAnalysisPage() {
             toast({
                 variant: 'destructive',
                 title: 'Analyse fehlgeschlagen',
-                description: 'Die KI konnte das Dokument nicht verarbeiten.',
+                description: e.message || 'Die KI konnte das Dokument nicht verarbeiten.',
             });
         } finally {
             setIsAnalyzing(false);
@@ -196,7 +206,7 @@ export default function ContractAnalysisPage() {
                 </CardContent>
             </Card>
 
-            {isAnalyzing && (
+            {isAnalyzing && !analysisResult && (
                 <Card>
                     <CardContent className="p-8 text-center">
                         <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary mb-4" />
