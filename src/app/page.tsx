@@ -1,4 +1,6 @@
 
+'use client';
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -6,6 +8,35 @@ import { CheckCircle, Bot, ScanText, Lightbulb, UserCheck, ShieldCheck } from "l
 import Link from "next/link";
 import Image from "next/image";
 import { Icons } from "@/components/icons";
+import { useAuth } from "@/lib/hooks/use-auth";
+
+function AuthNav() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null; // or a loading skeleton
+  }
+
+  if (user) {
+    return (
+      <Button asChild>
+        <Link href="/dashboard">Zur App</Link>
+      </Button>
+    )
+  }
+
+  return (
+    <>
+      <Link href="/login" className="text-sm font-medium hover:underline underline-offset-4 hidden sm:inline-block">
+        Anmelden
+      </Link>
+      <Button asChild>
+        <Link href="/signup">Jetzt kostenlos testen</Link>
+      </Button>
+    </>
+  )
+}
+
 
 export default function LandingPage() {
   return (
@@ -15,13 +46,8 @@ export default function LandingPage() {
           <Icons.Logo className="h-7 w-7 text-primary" />
           <span className="text-xl font-bold font-headline text-primary">Legiscribe</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link href="/login" className="text-sm font-medium hover:underline underline-offset-4">
-            Anmelden
-          </Link>
-          <Button asChild>
-            <Link href="/signup">Jetzt kostenlos testen</Link>
-          </Button>
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+         <AuthNav />
         </nav>
       </header>
 
