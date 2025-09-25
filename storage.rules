@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Erzwinge, dass alle Uploads in einen 'uploads' Ordner gehen
+    // und dass jeder Benutzer nur in seinen eigenen Ordner schreiben kann.
+    match /uploads/{userId}/{allPaths=**} {
+      // Nur der authentifizierte Benutzer, dessen userId mit dem Ordner übereinstimmt,
+      // kann in diesen Ordner schreiben (hochladen, aktualisieren, löschen).
+      allow write: if request.auth != null && request.auth.uid == userId;
+
+      // Nur der authentifizierte Benutzer, dessen userId mit dem Ordner übereinstimmt,
+      // kann aus diesem Ordner lesen. Dies stellt sicher, dass serverseitige
+      // Prozesse, die im Namen des Benutzers handeln (indirekt), die Datei abrufen können.
+      allow read: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
