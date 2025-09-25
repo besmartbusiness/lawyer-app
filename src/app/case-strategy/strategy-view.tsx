@@ -104,6 +104,14 @@ export function StrategyView({ defaultSummary = '' }: StrategyViewProps) {
             setIsAnalyzing(false);
         }
     };
+    
+    const formatDate = (dateString: string) => {
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+        return dateString; // Fallback
+    }
 
     const isBusy = isAnalyzing;
 
@@ -211,15 +219,13 @@ export function StrategyView({ defaultSummary = '' }: StrategyViewProps) {
                             <CardTitle className="flex items-center gap-2"><Milestone className="h-5 w-5 text-primary" />Zeitstrahl der Ereignisse</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="relative pl-6">
-                                <div className="absolute left-[30px] h-full w-0.5 bg-border -translate-x-1/2"></div>
+                            <div className="relative pl-4">
+                                <div className="absolute left-6 top-0 h-full w-0.5 bg-border -translate-x-1/2"></div>
                                 {analysisResult.timeline.map((item, index) => (
-                                    <div key={index} className="relative mb-6">
-                                        <div className="absolute left-[30px] top-1 h-4 w-4 bg-primary rounded-full border-4 border-background -translate-x-1/2"></div>
-                                        <div className="pl-8">
-                                            <p className="font-semibold">{item.date}</p>
-                                            <p className="text-sm text-muted-foreground">{item.event}</p>
-                                        </div>
+                                    <div key={index} className="relative pl-8 mb-8 last:mb-0">
+                                        <div className="absolute left-6 top-1.5 h-4 w-4 bg-primary rounded-full border-4 border-background -translate-x-1/2"></div>
+                                        <p className="font-semibold">{formatDate(item.date)}</p>
+                                        <p className="text-sm text-muted-foreground">{item.event}</p>
                                     </div>
                                 ))}
                             </div>
@@ -289,5 +295,7 @@ export function StrategyView({ defaultSummary = '' }: StrategyViewProps) {
         </div>
     );
 }
+
+    
 
     
