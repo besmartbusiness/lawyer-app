@@ -14,10 +14,10 @@ import { z } from 'genkit';
 import { vertexAI } from '@genkit-ai/vertexai';
 
 const TranscribeAudioInputSchema = z.object({
-  audioDataUri: z
+  audioUrl: z
     .string()
     .describe(
-      "An audio file, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A public URL to an audio file. This URL will be used to fetch the audio for transcription."
     ),
 });
 export type TranscribeAudioInput = z.infer<typeof TranscribeAudioInputSchema>;
@@ -46,7 +46,7 @@ const transcribeAudioFlow = ai.defineFlow(
               },
               {
                 media: {
-                  url: input.audioDataUri,
+                  url: input.audioUrl,
                 },
               },
             ],
@@ -57,3 +57,5 @@ const transcribeAudioFlow = ai.defineFlow(
           }
     }
   );
+
+    

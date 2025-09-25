@@ -18,6 +18,8 @@ import { Citation, suggestCitations } from '@/ai/flows/suggest-citations';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { summarizeForClient } from '@/ai/flows/summarize-for-client';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
 type Document = {
@@ -151,15 +153,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
     setIsSaving(false);
   }
 
-  const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-  };
-
   const handleToggleRecording = () => {
     if (isRecording) {
       mediaRecorderRef.current?.stop();
@@ -192,25 +185,29 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
         mediaRecorder.onstop = async () => {
           setIsRecording(false);
           setIsTranscribing(true);
-          toast({ title: 'Aufnahme beendet', description: 'Transkription wird verarbeitet...' });
+          toast({ title: 'Aufnahme beendet', description: 'Audio wird hochgeladen...' });
           
           const audioBlob = new Blob(chunks, { type: 'audio/webm' });
           chunks = [];
           stream.getTracks().forEach(track => track.stop());
 
           try {
-            const audioDataUri = await blobToBase64(audioBlob);
-            const transcriptionResult = await transcribeAudio({ audioDataUri });
+            // Upload to Firebase Storage
+            const audioFileName = `audio/${Date.now()}.webm`;
+            const storageRef = ref(storage, `uploads/${user.uid}/${audioFileName}`);
+            await uploadBytes(storageRef, audioBlob);
+            const downloadURL = await getDownloadURL(storageRef);
+
+            toast({ title: 'Upload erfolgreich', description: 'Transkription wird verarbeitet...' });
+            
+            const transcriptionResult = await transcribeAudio({ audioUrl: downloadURL });
             const transcribedNotes = transcriptionResult.text;
             
             const newNotes = notes ? `${notes}\n\n--- Diktat ---\n${transcribedNotes}` : transcribedNotes;
             
-            // Wait for state to update before calling generate
-            // Using a callback with setNotes ensures we have the latest notes
             setNotes(newNotes);
             toast({ title: 'Transkription erfolgreich', description: 'Notizen aktualisiert. Starte Dokumentengenerierung...' });
             
-            // Now call the main generate handler but ensure notes are up to date
             if (user) {
                 setIsTranscribing(false);
                 await handleGenerateWithUpdatedNotes(newNotes, user.uid);
@@ -220,8 +217,8 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
             
 
           } catch (error) {
-            console.error('Transcription error:', error);
-            setTranscriptionError("Bei der Transkription ist ein Fehler aufgetreten.");
+            console.error('Transcription or upload error:', error);
+            setTranscriptionError("Bei der Verarbeitung der Aufnahme ist ein Fehler aufgetreten.");
             setIsTranscribing(false);
           }
         };
