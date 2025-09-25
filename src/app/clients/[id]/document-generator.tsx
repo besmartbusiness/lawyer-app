@@ -204,13 +204,20 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
             const transcribedNotes = transcriptionResult.text;
             
             const newNotes = notes ? `${notes}\n\n--- Diktat ---\n${transcribedNotes}` : transcribedNotes;
+            
+            // Wait for state to update before calling generate
+            // Using a callback with setNotes ensures we have the latest notes
             setNotes(newNotes);
             toast({ title: 'Transkription erfolgreich', description: 'Notizen aktualisiert. Starte Dokumentengenerierung...' });
-
-            setIsTranscribing(false);
             
-            // Now call the main generate handler
-            handleGenerate();
+            // Now call the main generate handler but ensure notes are up to date
+            if (user) {
+                setIsTranscribing(false);
+                await handleGenerateWithUpdatedNotes(newNotes, user.uid);
+            } else {
+                 setIsTranscribing(false);
+            }
+            
 
           } catch (error) {
             console.error('Transcription error:', error);
@@ -228,6 +235,40 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
         setTranscriptionError("Ihr Browser unterstützt keine Audioaufnahmen.");
     }
   };
+
+  // Helper function to call generate with guaranteed latest notes
+    const handleGenerateWithUpdatedNotes = async (updatedNotes: string, userId: string) => {
+        if (!updatedNotes.trim()) {
+            toast({ variant: 'destructive', title: 'Eingabe erforderlich', description: 'Keine Notizen zur Generierung vorhanden.' });
+            return;
+        }
+
+        setIsGenerating(true);
+        setIsSuggesting(true);
+        setGeneratedDoc('');
+        setCitations([]);
+
+        try {
+            const docPromise = generateLegalDocument({ notes: updatedNotes, userId: userId });
+            const citationPromise = suggestCitations({ context: updatedNotes });
+
+            citationPromise.then(result => setCitations(result.suggestions))
+                         .catch(error => console.error("Citation suggestion failed:", error))
+                         .finally(() => setIsSuggesting(false));
+
+            const docResult = await docPromise;
+            setGeneratedDoc(docResult.document);
+            if (!documentTitle) {
+                setDocumentTitle("Unbenanntes Dokument");
+            }
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'Generierung fehlgeschlagen', description: 'Beim Generieren des Dokuments ist ein Fehler aufgetreten.' });
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
   
   const handleNewDocument = () => {
     onNew(); 
@@ -452,3 +493,5 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
     </>
   );
 }
+
+    
