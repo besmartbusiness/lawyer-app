@@ -86,9 +86,6 @@ const generateCaseStrategyFlow = ai.defineFlow(
     outputSchema: CaseStrategyOutputSchema,
   },
   async input => {
-    if (!input.documents || input.documents.length === 0) {
-      throw new Error("At least one document is required for analysis.");
-    }
     const {output} = await prompt(input);
     return output!;
   }
