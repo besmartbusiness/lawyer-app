@@ -51,7 +51,7 @@ export async function generateCaseStrategy(input: CaseStrategyInput): Promise<Ca
 
 const prompt = ai.definePrompt({
   name: 'generateCaseStrategyPrompt',
-  model: vertexAI.model('gemini-2.5-pro'),
+  model: vertexAI.model('gemini-1.5-flash'),
   input: {schema: CaseStrategyInputSchema},
   output: {schema: CaseStrategyOutputSchema},
   prompt: `Sie sind ein hochqualifizierter strategischer KI-Assistent (Konzipient) für eine deutsche Spitzenkanzlei. Ihre Aufgabe ist es, aus den bereitgestellten Dokumenten und einer Fallzusammenfassung eine umfassende strategische Analyse für den bearbeitenden Anwalt zu erstellen.

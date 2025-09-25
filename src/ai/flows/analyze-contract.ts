@@ -38,7 +38,7 @@ export async function analyzeContract(input: AnalyzeContractInput): Promise<Anal
 
 const prompt = ai.definePrompt({
   name: 'analyzeContractPrompt',
-  model: vertexAI.model('gemini-2.5-pro'),
+  model: vertexAI.model('gemini-1.5-flash'),
   input: {schema: AnalyzeContractInputSchema},
   output: {schema: AnalyzeContractOutputSchema},
   prompt: `Sie sind ein hochspezialisierter KI-Anwalt für deutsches Wirtschafts- und Vertragsrecht. Ihre Aufgabe ist es, einen Vertragsentwurf zu prüfen und als "interaktiver Verhandlungs-Copilot" zu agieren. Sie wurden auf zehntausenden von Verträgen und Marktdaten trainiert.

@@ -39,7 +39,7 @@ const transcribeAudioFlow = ai.defineFlow(
     },
     async (input) => {
         const {text} = await ai.generate({
-            model: vertexAI.model('gemini-2.5-flash'),
+            model: vertexAI.model('gemini-1.5-flash'),
             prompt: [
               {
                 text: 'Transkribieren Sie die folgende Audiodatei auf Deutsch. Konzentrieren Sie sich nur auf den gesprochenen Text und lassen Sie alle Füllwörter oder Geräusche weg.',

@@ -31,7 +31,7 @@ export async function generateLegalDocument(input: GenerateLegalDocumentInput): 
 
 const generateLegalDocumentPrompt = ai.definePrompt({
   name: 'generateLegalDocumentPrompt',
-  model: vertexAI.model('gemini-2.5-pro'),
+  model: vertexAI.model('gemini-1.5-flash'),
   input: {schema: GenerateLegalDocumentInputSchema},
   output: {schema: GenerateLegalDocumentOutputSchema},
   tools: [getTextBlocksTool, getDocumentTemplateTool],
@@ -59,5 +59,3 @@ const generateLegalDocumentFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    

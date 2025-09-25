@@ -36,7 +36,7 @@ export async function suggestCitations(input: SuggestCitationsInput): Promise<Su
 
 const prompt = ai.definePrompt({
   name: 'suggestCitationsPrompt',
-  model: vertexAI.model('gemini-2.5-pro'),
+  model: vertexAI.model('gemini-1.5-flash'),
   input: {schema: SuggestCitationsInputSchema},
   output: {schema: SuggestCitationsOutputSchema},
   prompt: `Sie sind ein hochqualifizierter KI-Rechtsassistent für deutsches Recht. Ihre Aufgabe ist es, den folgenden juristischen Sachverhalt zu analysieren und eine Liste relevanter Gesetzesparagrafen und wegweisender Gerichtsentscheidungen vorzuschlagen.
