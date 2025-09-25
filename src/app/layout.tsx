@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthLayoutWrapper } from '@/components/layout/auth-layout-wrapper';
 import { ThemeProvider } from '@/components/theme-provider';
 import { CookieBanner } from '@/components/cookie-banner';
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: 'Legiscribe',
@@ -36,7 +37,10 @@ export default function RootLayout({
             <Toaster />
           </ThemeProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
 }
+
+    
