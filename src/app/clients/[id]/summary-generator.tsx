@@ -10,9 +10,6 @@ import { Loader2, BookText, Wand2, UploadCloud, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { summarizeText } from '@/ai/flows/summarize-text';
 import { Input } from '@/components/ui/input';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { storage } from '@/lib/firebase';
 
 type SummaryGeneratorProps = {
     onSave: (doc: { title: string; content: string; notes: string }) => void;
@@ -26,10 +23,17 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [pdfDataUri, setPdfDataUri] = useState('');
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user } = useAuth();
+
+  const fileToDataUri = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+  }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -57,31 +61,23 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
       });
       return;
     }
-     if (!user) {
-        toast({ variant: 'destructive', title: 'Nicht angemeldet', description: 'Sie müssen angemeldet sein.' });
-        return;
-    }
 
     setIsSummarizing(true);
     setSummary('');
     setSummaryTitle('');
 
     try {
-        let documentUrl: string | undefined = undefined;
+        let documentDataUri: string | undefined = undefined;
 
         if (file) {
-             // 1. Upload file to Firebase Storage
-            toast({ title: 'Lade Dokument hoch...', description: 'Ihr Dokument wird sicher gespeichert.' });
-            const filePath = `uploads/${user.uid}/summaries/${Date.now()}_${file.name}`;
-            const fileStorageRef = storageRef(storage, filePath);
-            await uploadBytes(fileStorageRef, file);
-            documentUrl = await getDownloadURL(fileStorageRef);
+            toast({ title: 'Verarbeite Dokument...', description: 'Ihr Dokument wird für die Analyse vorbereitet.' });
+            documentDataUri = await fileToDataUri(file);
         }
 
         toast({ title: 'Erstelle Zusammenfassung...', description: 'Die KI analysiert den Inhalt.' });
         const result = await summarizeText({ 
             textToSummarize: textToSummarize || undefined,
-            documentDataUri: documentUrl,
+            documentDataUri: documentDataUri,
         });
         setSummary(result.summary);
         setSummaryTitle(`Zusammenfassung für ${file?.name || 'eingefügten Text'}`);
@@ -249,3 +245,5 @@ export function SummaryGenerator({ onSave }: SummaryGeneratorProps) {
     </Card>
   );
 }
+
+    

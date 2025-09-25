@@ -11,9 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { generateCaseStrategy, CaseStrategyOutput } from '@/ai/flows/generate-case-strategy';
 import { Badge } from '@/components/ui/badge';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { storage } from '@/lib/firebase';
 
 type StrategyViewProps = {
     defaultSummary?: string;
@@ -27,8 +24,15 @@ export function StrategyView({ defaultSummary = '' }: StrategyViewProps) {
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
-    const { user } = useAuth();
 
+    const fileToDataUri = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
@@ -63,31 +67,22 @@ export function StrategyView({ defaultSummary = '' }: StrategyViewProps) {
             });
             return;
         }
-        if (!user) {
-            toast({ variant: 'destructive', title: 'Nicht angemeldet', description: 'Sie müssen angemeldet sein.' });
-            return;
-        }
 
         setIsAnalyzing(true);
         setError(null);
         setAnalysisResult(null);
 
         try {
-            toast({ title: 'Lade Dokumente hoch...', description: 'Dies kann einen Moment dauern.' });
+            toast({ title: 'Verarbeite Dokumente...', description: 'Dies kann einen Moment dauern.' });
             
-            const uploadPromises = files.map(async (file) => {
-                const filePath = `uploads/${user.uid}/strategy_docs/${Date.now()}_${file.name}`;
-                const fileStorageRef = storageRef(storage, filePath);
-                await uploadBytes(fileStorageRef, file);
-                return getDownloadURL(fileStorageRef);
-            });
-            
-            const documentUrls = await Promise.all(uploadPromises);
+            const documentDataUris = await Promise.all(
+                files.map(file => fileToDataUri(file))
+            );
 
             toast({ title: 'Entwickle Strategie...', description: 'Die KI analysiert die hochgeladenen Dokumente.' });
 
             const result = await generateCaseStrategy({
-                documents: documentUrls,
+                documents: documentDataUris,
                 caseSummary: userSummary,
             });
 
@@ -294,3 +289,5 @@ export function StrategyView({ defaultSummary = '' }: StrategyViewProps) {
         </div>
     );
 }
+
+    

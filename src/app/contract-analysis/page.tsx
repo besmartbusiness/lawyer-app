@@ -11,9 +11,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { analyzeContract, AnalyzeContractOutput } from '@/ai/flows/analyze-contract';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { storage } from '@/lib/firebase';
 
 
 export default function ContractAnalysisPage() {
@@ -23,8 +20,15 @@ export default function ContractAnalysisPage() {
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
-    const { user } = useAuth();
 
+    const fileToDataUri = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
@@ -62,29 +66,18 @@ export default function ContractAnalysisPage() {
             });
             return;
         }
-         if (!user) {
-            toast({ variant: 'destructive', title: 'Nicht angemeldet', description: 'Sie müssen angemeldet sein.' });
-            return;
-        }
 
         setIsAnalyzing(true);
         setError(null);
         setAnalysisResult(null);
 
         try {
-            // 1. Upload file to Firebase Storage
-            toast({ title: 'Lade Vertrag hoch...', description: 'Ihr Dokument wird sicher gespeichert.' });
-            const filePath = `uploads/${user.uid}/contracts/${Date.now()}_${file.name}`;
-            const fileStorageRef = storageRef(storage, filePath);
-            await uploadBytes(fileStorageRef, file);
-
-            // 2. Get download URL
-            const downloadURL = await getDownloadURL(fileStorageRef);
+            toast({ title: 'Verarbeite Vertrag...', description: 'Ihr Dokument wird für die Analyse vorbereitet.' });
+            const documentDataUri = await fileToDataUri(file);
             
-            // 3. Call AI flow with the URL
-            toast({ title: 'Analysiere Vertrag...', description: 'Die KI prüft das Dokument.' });
+            toast({ title: 'Analysiere Vertrag...', description: 'Die KI prüft das Dokument auf Risiken.' });
             const result = await analyzeContract({
-                contractDocument: downloadURL,
+                contractDocument: documentDataUri,
             });
 
             setAnalysisResult(result);
@@ -279,3 +272,5 @@ export default function ContractAnalysisPage() {
         </div>
     );
 }
+
+    
