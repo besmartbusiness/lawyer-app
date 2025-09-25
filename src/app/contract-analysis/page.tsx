@@ -225,7 +225,7 @@ export default function ContractAnalysisPage() {
                                                 <div className="flex items-center justify-between w-full">
                                                      <div className="flex-1 text-left">
                                                         <Badge variant={getRiskBadgeVariant(item.riskLevel)}>{getRiskBadgeText(item.riskLevel)}</Badge>
-                                                        <p className="font-semibold mt-2 truncate pr-4">{item.clauseText}</p>
+                                                        <p className="font-semibold mt-2 whitespace-normal pr-4">{item.clauseText}</p>
                                                     </div>
                                                 </div>
                                             </AccordionTrigger>
@@ -233,22 +233,22 @@ export default function ContractAnalysisPage() {
                                                 
                                                 <div className="space-y-2">
                                                     <h4 className="font-semibold">Original-Klausel</h4>
-                                                    <blockquote className="border-l-4 pl-4 text-sm italic bg-secondary/40 py-2">"{item.clauseText}"</blockquote>
+                                                    <blockquote className="border-l-4 pl-4 text-sm italic bg-secondary/40 py-2 whitespace-pre-wrap">"{item.clauseText}"</blockquote>
                                                 </div>
 
                                                 <div className="space-y-2">
                                                     <h4 className="font-semibold">Risiko-Analyse</h4>
-                                                    <p className="text-sm text-muted-foreground">{item.riskExplanation}</p>
+                                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.riskExplanation}</p>
                                                 </div>
 
                                                 <div className="space-y-2">
                                                     <h4 className="font-semibold">Alternativer Formulierungsvorschlag</h4>
-                                                    <p className="text-sm text-green-700 bg-green-50 p-3 rounded-md dark:bg-green-950 dark:text-green-300">{item.alternativeFormulation}</p>
+                                                    <p className="text-sm text-green-700 bg-green-50 p-3 rounded-md dark:bg-green-950 dark:text-green-300 whitespace-pre-wrap">{item.alternativeFormulation}</p>
                                                 </div>
 
                                                 <div className="space-y-2">
                                                     <h4 className="font-semibold">Vergleich mit Marktdaten</h4>
-                                                     <p className="text-sm text-muted-foreground">{item.marketComparison}</p>
+                                                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.marketComparison}</p>
                                                 </div>
                                                
                                             </AccordionContent>
@@ -273,4 +273,3 @@ export default function ContractAnalysisPage() {
     );
 }
 
-    
