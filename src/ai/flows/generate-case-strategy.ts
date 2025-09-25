@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import vertexAI from '@genkit-ai/vertexai';
+import {vertexAI} from '@genkit-ai/vertexai';
 import {z} from 'genkit';
 
 const CaseStrategyInputSchema = z.object({
@@ -51,7 +51,7 @@ export async function generateCaseStrategy(input: CaseStrategyInput): Promise<Ca
 
 const prompt = ai.definePrompt({
   name: 'generateCaseStrategyPrompt',
-  model: vertexAI.model('gemini-1.5-flash'),
+  model: vertexAI.model('gemini-2.5-pro'),
   input: {schema: CaseStrategyInputSchema},
   output: {schema: CaseStrategyOutputSchema},
   prompt: `Sie sind ein hochqualifizierter strategischer KI-Assistent (Konzipient) für eine deutsche Spitzenkanzlei. Ihre Aufgabe ist es, aus den bereitgestellten Dokumenten und einer Fallzusammenfassung eine umfassende strategische Analyse für den bearbeitenden Anwalt zu erstellen.

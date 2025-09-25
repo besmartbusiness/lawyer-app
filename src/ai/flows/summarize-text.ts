@@ -29,7 +29,7 @@ export async function summarizeText(input: SummarizeTextInput): Promise<Summariz
 
 const prompt = ai.definePrompt({
   name: 'summarizeTextPrompt',
-  model: vertexAI.model('gemini-1.5-flash'),
+  model: vertexAI.model('gemini-2.5-pro'),
   input: {schema: SummarizeTextInputSchema},
   output: {schema: SummarizeTextOutputSchema},
   prompt: `Sie sind ein hochqualifizierter KI-Rechtsassistent, spezialisiert auf die Analyse umfangreicher juristischer Dokumente in Deutschland. Ihre Aufgabe ist es, das folgende Dokument oder den folgenden Text zu analysieren und eine prägnante, strukturierte Zusammenfassung zu erstellen.

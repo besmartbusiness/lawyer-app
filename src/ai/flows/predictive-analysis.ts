@@ -49,7 +49,7 @@ export async function predictiveAnalysis(input: PredictiveAnalysisInput): Promis
 
 const prompt = ai.definePrompt({
   name: 'predictiveAnalysisPrompt',
-  model: vertexAI.model('gemini-1.5-flash'),
+  model: vertexAI.model('gemini-2.5-pro'),
   input: { schema: PredictiveAnalysisInputSchema },
   output: { schema: PredictiveAnalysisOutputSchema },
   prompt: `Sie sind ein hochspezialisiertes KI-Modell für prädiktive juristische Analysen in Deutschland. Ihre Aufgabe ist es, eine datengestützte, realistische Einschätzung der Erfolgschancen eines Falles zu geben. Nutzen Sie dafür Ihre integrierte Websuche, um das Internet nach echten, vergleichbaren Fällen, Urteilen und Fachartikeln in deutschen juristischen Datenbanken (z.B. JURIS, Beck-Online, OpenJur) zu durchsuchen.
