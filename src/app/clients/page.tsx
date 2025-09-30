@@ -29,8 +29,8 @@ import { Loader2, PlusCircle } from 'lucide-react';
 
 const clientSchema = z.object({
   name: z.string().min(2, { message: 'Der Name muss mindestens 2 Zeichen lang sein.' }),
-  email: z.string().email({ message: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' }),
-  phone: z.string().min(5, { message: 'Bitte geben Sie eine gültige Telefonnummer ein.' }),
+  email: z.string().email({ message: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' }).optional().or(z.literal('')),
+  phone: z.string().optional(),
 });
 
 type ClientFormValues = z.infer<typeof clientSchema>;
@@ -109,7 +109,7 @@ function AddClientDialog({ onClientAdded }: { onClientAdded: (client: any) => vo
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email (Optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="max.mustermann@example.com" {...field} />
                   </FormControl>
@@ -122,7 +122,7 @@ function AddClientDialog({ onClientAdded }: { onClientAdded: (client: any) => vo
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telefon</FormLabel>
+                  <FormLabel>Telefon (Optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="+49 123 456789" {...field} />
                   </FormControl>
