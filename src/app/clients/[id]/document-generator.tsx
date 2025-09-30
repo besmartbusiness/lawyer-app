@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Icons } from '@/components/icons';
-import { Loader2, Wand2, Save, Mic, MicOff, AlertCircle, FilePlus2, FileText, BookOpenCheck, Languages, Copy } from 'lucide-react';
+import { Loader2, Wand2, Save, Mic, MicOff, AlertCircle, FilePlus2, FileText, BookOpenCheck, Languages, Copy, Square } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateLegalDocument } from '@/ai/flows/generate-legal-document-from-notes';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
@@ -45,10 +45,16 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -92,7 +98,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
     setCitations([]);
 
     try {
-        // Fire off both requests in parallel
         const docPromise = generateLegalDocument({ notes, userId: user.uid });
         const citationPromise = suggestCitations({ context: notes });
 
@@ -100,7 +105,6 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
             setCitations(result.suggestions);
         }).catch(error => {
             console.error("Citation suggestion failed:", error);
-            // Non-critical, so we don't show a toast
         }).finally(() => {
             setIsSuggesting(false);
         });
@@ -153,46 +157,49 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
     setIsSaving(false);
   }
 
-  const handleToggleRecording = () => {
-    if (isRecording) {
-      mediaRecorderRef.current?.stop();
-    } else {
-      startRecording();
-    }
-  };
-
   const startRecording = async () => {
     setTranscriptionError(null);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setTranscriptionError("Ihr Browser unterstützt keine Audioaufnahmen.");
+      return;
+    }
     if (!user) {
         toast({ variant: 'destructive', title: 'Nicht angemeldet', description: 'Sie müssen angemeldet sein.' });
         return;
     }
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-        mediaRecorderRef.current = mediaRecorder;
-        
-        let chunks: Blob[] = [];
-        mediaRecorder.ondataavailable = (event) => {
-          chunks.push(event.data);
-        };
 
-        mediaRecorder.onstart = () => {
-            setIsRecording(true);
-        };
-        
-        mediaRecorder.onstop = async () => {
-          setIsRecording(false);
-          setIsTranscribing(true);
-          toast({ title: 'Aufnahme beendet', description: 'Audio wird hochgeladen...' });
-          
-          const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-          chunks = [];
-          stream.getTracks().forEach(track => track.stop());
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
 
-          try {
-            // Upload to Firebase Storage
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        if (recordingIntervalRef.current) {
+            clearInterval(recordingIntervalRef.current);
+        }
+        setIsRecording(false);
+        setRecordingTime(0);
+        
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        audioChunksRef.current = [];
+        stream.getTracks().forEach(track => track.stop());
+
+        if (audioBlob.size === 0) {
+            toast({ variant: 'destructive', title: 'Aufnahme leer', description: 'Die Aufnahme war zu kurz oder leer.' });
+            return;
+        }
+
+        setIsTranscribing(true);
+        toast({ title: 'Aufnahme beendet', description: 'Audio wird hochgeladen...' });
+
+        try {
             const audioFileName = `audio/${Date.now()}.webm`;
             const storageRef = ref(storage, `uploads/${user.uid}/${audioFileName}`);
             await uploadBytes(storageRef, audioBlob);
@@ -203,68 +210,41 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
             const transcriptionResult = await transcribeAudio({ audioUrl: downloadURL });
             const transcribedNotes = transcriptionResult.text;
             
-            const newNotes = notes ? `${notes}\n\n--- Diktat ---\n${transcribedNotes}` : transcribedNotes;
+            setNotes(prev => prev ? `${prev}\n\n--- Diktat ---\n${transcribedNotes}` : transcribedNotes);
+            toast({ title: 'Transkription erfolgreich', description: 'Notizen wurden aktualisiert.' });
             
-            setNotes(newNotes);
-            toast({ title: 'Transkription erfolgreich', description: 'Notizen aktualisiert. Starte Dokumentengenerierung...' });
-            
-            if (user) {
-                setIsTranscribing(false);
-                await handleGenerateWithUpdatedNotes(newNotes, user.uid);
-            } else {
-                 setIsTranscribing(false);
-            }
-            
-
-          } catch (error) {
+        } catch (error) {
             console.error('Transcription or upload error:', error);
             setTranscriptionError("Bei der Verarbeitung der Aufnahme ist ein Fehler aufgetreten.");
+        } finally {
             setIsTranscribing(false);
-          }
-        };
-        
-        mediaRecorder.start();
-      } catch (err) {
-        console.error("Error accessing microphone:", err);
-        setTranscriptionError("Mikrofonzugriff verweigert. Bitte erlauben Sie den Zugriff in Ihren Browsereinstellungen.");
-      }
-    } else {
-        setTranscriptionError("Ihr Browser unterstützt keine Audioaufnahmen.");
+        }
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      setTranscriptionError("Mikrofonzugriff verweigert. Bitte erlauben Sie den Zugriff in Ihren Browsereinstellungen.");
     }
   };
 
-  // Helper function to call generate with guaranteed latest notes
-    const handleGenerateWithUpdatedNotes = async (updatedNotes: string, userId: string) => {
-        if (!updatedNotes.trim()) {
-            toast({ variant: 'destructive', title: 'Eingabe erforderlich', description: 'Keine Notizen zur Generierung vorhanden.' });
-            return;
-        }
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+    }
+  };
 
-        setIsGenerating(true);
-        setIsSuggesting(true);
-        setGeneratedDoc('');
-        setCitations([]);
-
-        try {
-            const docPromise = generateLegalDocument({ notes: updatedNotes, userId: userId });
-            const citationPromise = suggestCitations({ context: updatedNotes });
-
-            citationPromise.then(result => setCitations(result.suggestions))
-                         .catch(error => console.error("Citation suggestion failed:", error))
-                         .finally(() => setIsSuggesting(false));
-
-            const docResult = await docPromise;
-            setGeneratedDoc(docResult.document);
-            if (!documentTitle) {
-                setDocumentTitle("Unbenanntes Dokument");
-            }
-        } catch (error) {
-            console.error(error);
-            toast({ variant: 'destructive', title: 'Generierung fehlgeschlagen', description: 'Beim Generieren des Dokuments ist ein Fehler aufgetreten.' });
-        } finally {
-            setIsGenerating(false);
-        }
-    };
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
 
   
   const handleNewDocument = () => {
@@ -330,21 +310,44 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
       </CardHeader>
       <CardContent className="grid gap-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2 md:col-span-2">
-              <div className="flex justify-between items-center">
+            <div className="space-y-4 md:col-span-2">
+              <div>
                 <Label htmlFor="notes">Fallnotizen / Aktenvermerk / Diktat</Label>
-                <Button variant="ghost" size="icon" onClick={handleToggleRecording} title={isRecording ? "Aufnahme stoppen" : "Diktat starten"} disabled={isBusy}>
-                  {isRecording ? <MicOff className="text-destructive" /> : <Mic />}
-                </Button>
+                <Textarea
+                    id="notes"
+                    placeholder="Geben Sie hier Ihre Notizen ein oder starten Sie ein Diktat, um diesen Bereich automatisch zu füllen."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="mt-2 min-h-[150px]"
+                    disabled={isBusy}
+                />
               </div>
-              <Textarea
-                id="notes"
-                placeholder="Geben Sie hier Notizen ein oder starten Sie ein Diktat..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="min-h-[200px]"
-                disabled={isBusy}
-              />
+
+              {isRecording ? (
+                <div className="rounded-lg border bg-secondary p-4 flex flex-col items-center justify-center text-center">
+                   <div className="flex items-center gap-3 text-destructive">
+                       <Mic className="animate-pulse" />
+                       <span className="text-xl font-mono tabular-nums">{formatRecordingTime(recordingTime)}</span>
+                   </div>
+                   <p className="text-sm text-muted-foreground mt-1 mb-4">Aufnahme läuft...</p>
+                   <Button onClick={stopRecording} variant="destructive" size="lg" className="rounded-full w-24 h-24 shadow-lg">
+                       <Square className="h-8 w-8 fill-white" />
+                       <span className="sr-only">Aufnahme stoppen</span>
+                   </Button>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed p-6 flex flex-col items-center justify-center text-center">
+                    <div className="mb-4">
+                        <Button onClick={startRecording} size="lg" disabled={isBusy} variant="outline">
+                            <Mic className="mr-2 h-5 w-5" />
+                            Diktat starten
+                        </Button>
+                    </div>
+                     <p className="text-xs text-muted-foreground">Oder geben Sie Ihre Notizen manuell oben ein.</p>
+                </div>
+              )}
+            
+
                {transcriptionError && (
                 <Alert variant="destructive" className="mt-2">
                     <AlertCircle className="h-4 w-4" />
@@ -352,15 +355,9 @@ export function DocumentGenerator({ clientName, onSave, onNew, selectedDocument 
                     <AlertDescription>{transcriptionError}</AlertDescription>
                 </Alert>
               )}
-              {isRecording && (
-                 <div className="flex items-center gap-2 text-sm text-destructive animate-pulse pt-2">
-                    <Mic className="h-4 w-4" />
-                    <span>Aufnahme läuft...</span>
-                </div>
-              )}
                {isTranscribing && (
-                 <div className="flex items-center gap-2 text-sm text-primary animate-pulse pt-2">
-                    <FileText className="h-4 w-4" />
+                 <div className="flex items-center justify-center gap-2 text-sm text-primary animate-pulse pt-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Transkription wird verarbeitet...</span>
                 </div>
               )}
